@@ -546,6 +546,7 @@ html, body {
   background: var(--bg); color: var(--text-dark);
   border-radius: 4px 16px 16px 16px;
   border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  white-space: normal;
 }
 .msg-row.user .msg-bubble {
   background: linear-gradient(135deg, var(--teal), var(--teal-dark));
@@ -554,6 +555,7 @@ html, body {
 
 .msg-bubble ol, .msg-bubble ul { padding-left: 18px; margin: 4px 0; }
 .msg-bubble li     { margin: 2px 0; }
+.msg-bubble li p   { margin: 0; padding: 0; }
 .msg-bubble strong { font-weight: 600; }
 .msg-bubble code {
   background: rgba(0,181,204,.12); color: var(--teal-dark);
