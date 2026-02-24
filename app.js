@@ -200,6 +200,7 @@ LOINC CODES AND UNITS:
 53. Diastolic Blood Pressure: 8462-4, mm[Hg]
 54. Systolic Blood Pressure: 8480-6, mm[Hg]
 55. Heart rate: 8867-4, mg/dL
+56. BMI: 39156-5, kg/m2
 `;
 
 // ── System Prompt ────────────────────────────────────
