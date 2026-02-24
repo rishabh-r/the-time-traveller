@@ -808,35 +808,9 @@ function formatTime() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// Very light markdown-to-HTML (bold, numbered/bullet lists, code)
+// Markdown renderer using marked.js (handles numbered lists, bullets, bold, code, etc.)
 function simpleMarkdown(text) {
-  let html = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  // Bold
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
-
-  // Numbered list
-  html = html.replace(/((?:^\d+\. .+\n?)+)/gm, (match) => {
-    const items = match.trim().split("\n").map(l => `<li>${l.replace(/^\d+\. /, "")}</li>`).join("");
-    return `<ol>${items}</ol>`;
-  });
-  // Bullet list
-  html = html.replace(/((?:^[-•*] .+\n?)+)/gm, (match) => {
-    const items = match.trim().split("\n").map(l => `<li>${l.replace(/^[-•*] /, "")}</li>`).join("");
-    return `<ul>${items}</ul>`;
-  });
-
-  // Paragraphs (double newlines)
-  html = html.replace(/\n{2,}/g, "</p><p>");
-  // Line breaks
-  html = html.replace(/\n/g, "<br>");
-
-  return `<p>${html}</p>`;
+  return marked.parse(text || "");
 }
 
 function appendMessage(role, text) {
