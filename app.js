@@ -201,6 +201,8 @@ LOINC CODES AND UNITS:
 54. Systolic Blood Pressure: 8480-6, mm[Hg]
 55. Heart rate: 8867-4, mg/dL
 56. BMI: 39156-5, kg/m2
+57. Albumin: 1751-7, g/dL
+58. Protein/Creatinine Ratio: 2890-2, mg/mg
 `;
 
 // ── System Prompt ────────────────────────────────────
