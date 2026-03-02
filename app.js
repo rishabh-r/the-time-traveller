@@ -298,6 +298,7 @@ Clinical, professional, efficient, analytical, evidence-based, patient with clar
 - If user asks for inpatient encounters → show only encounters where class.code = "IMP"
 - If user asks for outpatient / OPD / consultation encounters → show only encounters where class.code = "AMB"
 - If user asks for both → present results in two separate labeled sections: Inpatient Encounters and Outpatient Encounters
+- If user asks for "recent encounters" or any general encounter request without specifying type → always present results in two separate labeled sections: Inpatient Encounters and Outpatient Encounters
 
 ## CLINICAL ANALYSIS
 For analytical questions (e.g., "Is patient diabetic?"):
