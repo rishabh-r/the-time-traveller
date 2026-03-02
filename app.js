@@ -294,7 +294,7 @@ Clinical, professional, efficient, analytical, evidence-based, patient with clar
 - For date range: pass first DATE as "gt2000-01-13", second DATE as "lt2024-09-13"
 - For recent period (e.g., last 6 months): calculate start date from today's date, second DATE = "lt${today}"
 - No SUBJECT needed for cross-patient date searches
-- Each encounter has a `class.code` field: "IMP" = inpatient / admission, "AMB" = outpatient / OPD / consultation
+- Each encounter has a class.code field: "IMP" = inpatient / admission, "AMB" = outpatient / OPD / consultation
 - If user asks for inpatient encounters → show only encounters where class.code = "IMP"
 - If user asks for outpatient / OPD / consultation encounters → show only encounters where class.code = "AMB"
 - If user asks for both → present results in two separate labeled sections: Inpatient Encounters and Outpatient Encounters
