@@ -927,11 +927,11 @@ function showWelcomeCard(name) {
       <h3>Hey ${name}, how can I assist you today?</h3>
       <p>Search patient records, retrieve lab results, conditions, medications, encounters, and procedures.</p>
       <div class="welcome-chips">
-        <span class="chip" data-q="Search for patient David Stan">Search patient</span>
-        <span class="chip" data-q="Show conditions for patient 10035">View conditions</span>
-        <span class="chip" data-q="What is the hemoglobin count for patient 10035?">Lab results</span>
-        <span class="chip" data-q="List medications for patient 10035">Medications</span>
-        <span class="chip" data-q="Show encounters for patient 10035">Encounters</span>
+        <span class="chip" data-q="Search for patient Ethan Carter">Search patient</span>
+        <span class="chip" data-q="Show conditions for patient 44231">View conditions</span>
+        <span class="chip" data-q="What is the hemoglobin count for patient 44231?">Lab results</span>
+        <span class="chip" data-q="List medications for patient 44231">Medications</span>
+        <span class="chip" data-q="Show encounters for patient 44231">Encounters</span>
       </div>
     </div>
   `;
