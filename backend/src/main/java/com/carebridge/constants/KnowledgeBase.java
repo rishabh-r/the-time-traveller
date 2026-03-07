@@ -110,7 +110,15 @@ CONDITION ICD-9 CODES:
 E8788=Abn react-surg proc NEC, E8791=Abn react-renal dialysis, E8859=Fall from slipping NEC, E8889=Fall NOS,
 E9342=Adv eff anticoagulants, V090=Inf mcrg rstn pncllins, V103=Hx of breast malignancy, V1251=Hx-ven thrombosis/embols,
 V1259=Hx-circulatory dis NEC, V1582=History of tobacco use, V1588=Personal history of fall, V440=Tracheostomy status,
-V5861=Long-term use anticoagul, V5867=Long-term use of insulin, V8741=Hx antineoplastic chemo
+V5861=Long-term use anticoagul, V5867=Long-term use of insulin, V8741=Hx antineoplastic chemo,
+5852=Chr kidney dis stage II, 5853=Chr kidney dis stage III, 5855=Chron kidney dis stage V,
+28521=Anemia in chr kidney dis, 58881=Sec hyperparathyrd-renal, 7910=Proteinuria,
+V4511=Renal dialysis status, V560=Renal dialysis encounter,
+25002=DMII wo cmp uncntrld, 25010=DMII keto nt st uncntrld, 25012=DMII ketoacd uncontrold,
+25022=DMII hprosmlr uncontrold, 25032=DMII oth coma uncontrold, 25040=DMII renl nt st uncntrld,
+25042=DMII renal uncntrld, 25052=DMII ophth uncntrld, 25060=DMII neuro nt st uncntrl,
+25072=DMII circ uncntrld, 2510=Hypoglycemic coma, 2511=Oth spcf hypoglycemia,
+4254=Prim cardiomyopathy NEC, 42823=Ac on chr syst hrt fail, 5184=Acute lung edema NOS
 """;
 
     public static final String DRUG_CODES = """
