@@ -141,6 +141,11 @@ hemoglobinA1c: Low <4.0 | Normal 4.0-5.6 | High >5.6 (diabetes/poor glucose cont
 oxygenSaturationArterial: Low <95 (hypoxemia) | Normal 95-100 | High >100
 troponinT: Low <0.01 | Normal 0.01-0.04 | High >0.04 (heart muscle injury - urgent)
 leukocytesCount: Low <4000 (immune suppression) | Normal 4000-11000 | High >11000 (infection/inflammation)
+cReactiveProteinCRP: Low <0.0 | Normal 0.0-10.0 | High >10.0 (inflammation/infection/autoimmune)
+triglycerides: Low <50 | Normal 50-150 | High >150 (hyperlipidemia/cardiovascular risk)
+albuminCreatinineRatioACR: Low N/A | Normal <30 | Microalbuminuria 30-300 | Macroalbuminuria >300 (kidney damage/diabetes/hypertension)
+NTproBNP: Low <15 | Normal 15-125 | High >125 (heart failure/cardiac stress — elevated indicates worsening HF)
+INR: Low <0.8 (procoagulant state) | Normal 0.8-1.2 | Therapeutic 2.0-3.0 (anticoagulation) | High >3.0 (bleeding risk)
 `;
 
 const LOINC_CODES = `
@@ -203,6 +208,11 @@ LOINC CODES AND UNITS:
 56. BMI: 39156-5, kg/m2
 57. Albumin: 1751-7, g/dL
 58. Protein/Creatinine Ratio: 2890-2, mg/mg
+59. C-Reactive Protein CRP: 1988-5, mg/L
+60. Triglycerides: 1644-4, mg/dL
+61. Albumin/Creatinine Urine ACR: 14958-3, mg/g
+62. NTproBNP: 33762-6, pg/mL
+63. INR PT: 5895-7, ratio
 `;
 
 // ── System Prompt ────────────────────────────────────
