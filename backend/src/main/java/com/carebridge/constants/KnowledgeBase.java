@@ -66,6 +66,13 @@ LOINC CODES AND UNITS:
 54. Systolic Blood Pressure: 8480-6, mm[Hg]
 55. Heart rate: 8867-4, mg/dL
 56. BMI: 39156-5, kg/m2
+57. Albumin: 1751-7, g/dL
+58. Protein/Creatinine Ratio: 2890-2, mg/mg
+59. C-Reactive Protein CRP: 1988-5, mg/L
+60. Triglycerides: 1644-4, mg/dL
+61. Albumin/Creatinine Urine ACR: 14958-3, mg/g
+62. NTproBNP: 33762-6, pg/mL
+63. INR PT: 5895-7, ratio
 """;
 
     public static final String CONDITION_CODES = """
@@ -192,5 +199,12 @@ hemoglobinA1c: Low <4.0 | Normal 4.0-5.6 | High >5.6 (diabetes/poor glucose cont
 oxygenSaturationArterial: Low <95 (hypoxemia) | Normal 95-100 | High >100
 troponinT: Low <0.01 | Normal 0.01-0.04 | High >0.04 (heart muscle injury - urgent)
 leukocytesCount: Low <4000 (immune suppression) | Normal 4000-11000 | High >11000 (infection/inflammation)
+albumin: Low <3.5 (malnutrition/liver disease/nephrotic syndrome) | Normal 3.5-5.0 | High >5.0 (dehydration)
+proteinCreatinineRatio: Low <0.15 | Normal <0.2 | High >0.2 (proteinuria/kidney damage — >0.3 significant, >3.5 nephrotic range)
+cReactiveProtein: Low <0.0 | Normal 0.0-10.0 mg/L | High >10.0 (acute inflammation/infection — >100 severe infection/sepsis)
+triglycerides: Low <0.0 | Normal 0.0-150 mg/dL | High >150 (cardiovascular risk — >200 high, >500 pancreatitis risk)
+albuminCreatinineRatioUrine: Low <0.0 | Normal <30 mg/g | High >30 (microalbuminuria 30-300 = early kidney damage, macroalbuminuria >300 = significant kidney disease)
+NTproBNP: Low <0.0 | Normal <125 pg/mL (age <75) / <450 pg/mL (age ≥75) | High >125 (heart failure — >900 acute HF likely, >1800 severe)
+INR: Low <0.8 (hypercoagulable state) | Normal 0.8-1.2 | High >1.2 (bleeding risk — therapeutic range for anticoagulation: 2.0-3.0)
 """;
 }
