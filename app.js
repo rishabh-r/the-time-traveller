@@ -92,6 +92,24 @@ PROCEDURE CPT CODE RANGES:
 - Evaluation and Management / Follow-up Inpatient Consultations: 99261–99263
 - Evaluation and Management / Critical Care Services: 99291–99292
 - Evaluation and Management / Case Management Services: 99363–99368
+- Pathology and Laboratory / Chemistry and Organ Panels: 80047–89398
+- Medicine / Infusions and Injections: 96360–96417
+- Medicine / Physical Medicine and Rehabilitation: 97001–97799
+
+SPECIFIC CPT CODES:
+33249=ICD Implantation single-chamber, 33975=LVAD Implantation HeartMate 3,
+36821=AV Fistula Creation autogenous, 36903=AV Fistula Revision Thrombectomy,
+76770=Renal Ultrasound bilateral kidneys, 80053=Comprehensive Metabolic Panel,
+82947=Blood glucose quantitative stat, 90935=Haemodialysis with physician evaluation,
+90937=Repeat Haemodialysis evaluation, 92960=DC Cardioversion,
+93306=Echocardiography transthoracic TTE, 93451=Right Heart Catheterisation,
+93503=Swan-Ganz haemodynamic monitoring, 93620=EP Study with programmed stimulation,
+94002=Ventilation management CPAP BiPAP, 96360=IV Hydration infusion first hour,
+96365=IV Therapeutic infusion, 97597=Wound debridement open wound first 20 sq cm,
+97803=Renal diet reassessment 30 min, 99222=Hospital inpatient visit initial moderate,
+99223=Hospital inpatient visit initial high, 99232=Hospital subsequent visit moderate,
+99233=Hospital subsequent visit high, 99254=Inpatient consultation,
+99291=Critical care first 30-74 minutes
 `;
 
 const OBSERVATION_RANGES = `
