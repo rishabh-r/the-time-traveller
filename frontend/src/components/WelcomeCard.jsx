@@ -1,11 +1,11 @@
 import './WelcomeCard.css'
 
 const CHIPS = [
-  { label: 'Search patient',  query: 'Search for patient David Stan' },
-  { label: 'View conditions', query: 'Show conditions for patient 10035' },
-  { label: 'Lab results',     query: 'What is the hemoglobin count for patient 10035?' },
-  { label: 'Medications',     query: 'List medications for patient 10035' },
-  { label: 'Encounters',      query: 'Show encounters for patient 10035' },
+  { label: 'Search patient',  query: 'Show patient details of Ethan Carter' },
+  { label: 'View conditions', query: 'Show conditions for patient 44231' },
+  { label: 'Lab results',     query: 'What is the hemoglobin count for patient 44231?' },
+  { label: 'Medications',     query: 'List medications for patient 44231' },
+  { label: 'Encounters',      query: 'Show encounters for patient 44231' },
 ]
 
 /**
