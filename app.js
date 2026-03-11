@@ -60,7 +60,12 @@ V4511=Renal dialysis status, V560=Renal dialysis encounter,
 25022=DMII hprosmlr uncontrold, 25032=DMII oth coma uncontrold, 25040=DMII renl nt st uncntrld,
 25042=DMII renal uncntrld, 25052=DMII ophth uncntrld, 25060=DMII neuro nt st uncntrl,
 25072=DMII circ uncntrld, 2510=Hypoglycemic coma, 2511=Oth spcf hypoglycemia,
-4254=Prim cardiomyopathy NEC, 42823=Ac on chr syst hrt fail, 5184=Acute lung edema NOS
+4254=Prim cardiomyopathy NEC, 42823=Ac on chr syst hrt fail, 5184=Acute lung edema NOS,
+20071=Large cell lymphoma head, 20073=Large cell lymph abdom, 20078=Large cell lymph multip,
+2853=Anemia d/t antineo chemo, 28749=Sec thrombocytopenia NEC, 28800=Neutropenia NOS,
+52801=Mucositis d/t antineo rx,
+1123=Cutaneous candidiasis, 1170=Rhinosporidiosis, 1190=Pulmonary TB NOS-unspec,
+1200=Schistosoma haematobium, 1800=Malig neo endocervix, 5733=Hepatitis NOS, 78630=Hemoptysis NOS
 `;
 
 const DRUG_CODES = `
@@ -85,7 +90,11 @@ METF500, METF1000, METO_IV, NOREPI, OMEP20, PIP_TAZO, KCL_IV, KCL_IV40, SEMA05,
 NAHCO500, NAHCO_IV, NS_045, NS_09, VANC_IV, B12_1MG,
 BISO125, BISO5, CEFAZ_IV, DIGO125, DOBU_IV, DOBU_LD, DOBU_HI, DOBU_WN,
 FURO80PO, FURO40IV, FURO80IV, GTN_IV, HEPAR_IV, IVAB5, MGSO4_IV, MORPH_IV,
-NORA_IV, KCL_PO, PROP_IV, RAMI25, RAMI5, RAMI10, HYPTON_SAL, SPIRO25, SPIRO125, WARF3
+NORA_IV, KCL_PO, PROP_IV, RAMI25, RAMI5, RAMI10, HYPTON_SAL, SPIRO25, SPIRO125, WARF3,
+ACIC400, ACIC800I, AMIK500I, BEND90I, CARM100I, COTRMX, CYCLO500I, DEFIB_IV, DOXO50I,
+FILG300, FLUCON150, GRAN1I, IFOS_IV, MELPH_IV, ONDAN4I, ONDAN8, PLERIX, POLAT140I,
+PRED5, PRED25, RASBU_IV, RITUX500I, TPN_IV,
+ACETY_IV, ETHAMB400, GLYCO_INH, ISONH300, MOXIFL400, PYRAZIN500, PYRIDOX50, RIFAMP450, STREPT_IM, TRANEX_IV
 `;
 
 const PROCEDURE_CODES = `
@@ -119,7 +128,17 @@ SPECIFIC CPT CODES:
 97803=Renal diet reassessment 30 min, 99222=Hospital inpatient visit initial moderate,
 99223=Hospital inpatient visit initial high, 99232=Hospital subsequent visit moderate,
 99233=Hospital subsequent visit high, 99254=Inpatient consultation,
-99291=Critical care first 30-74 minutes
+99291=Critical care first 30-74 minutes,
+38206=Stem cell collection peripheral blood, 38221=Bone marrow biopsy, 38241=Autologous stem cell transplant,
+78816=PET-CT whole body, 88305=Surgical pathology level IV,
+96413=Chemotherapy infusion initial hour, 96415=Chemotherapy infusion each additional hour,
+31622=Bronchoscopy with brushing, 31623=Bronchoscopy with protected specimen brushing, 31625=Bronchoscopy with biopsy,
+32000=Thoracentesis, 32020=Tube thoracostomy, 32405=Lung biopsy percutaneous needle,
+37244=Vascular embolization bronchial artery, 71046=Chest X-ray 2 views,
+71250=CT thorax without contrast, 71260=CT thorax with contrast, 71275=CT angiography thorax,
+85025=CBC with differential, 87040=Blood culture aerobic, 87116=Mycobacterial culture sputum AFB,
+87153=Nucleic acid identification GeneXpert MTB, 92551=Audiometry screening,
+94010=Spirometry PFT, 99251=Inpatient consult straightforward, 99252=Inpatient consult low complexity
 `;
 
 const OBSERVATION_RANGES = `
@@ -182,6 +201,11 @@ triglycerides: Low <50 | Normal 50-150 | High >150 (hyperlipidemia/cardiovascula
 albuminCreatinineRatioACR: Low N/A | Normal <30 | Microalbuminuria 30-300 | Macroalbuminuria >300 (kidney damage/diabetes/hypertension)
 NTproBNP: Low <15 | Normal 15-125 | High >125 (heart failure/cardiac stress — elevated indicates worsening HF)
 INR: Low <0.8 (procoagulant state) | Normal 0.8-1.2 | Therapeutic 2.0-3.0 (anticoagulation) | High >3.0 (bleeding risk)
+ferritin: Low <15 (iron deficiency/anemia) | Normal 15-200 | High >200 (inflammation/iron overload/malignancy)
+uricAcid: Low <2.4 (uricosuric agents/malnutrition) | Normal 2.4-7.0 | High >7.0 (hyperuricemia/gout/tumor lysis)
+neutrophils: Low <1.5 (neutropenia - infection risk) | Normal 1.5-8.0 | High >8.0 (bacterial infection/inflammation)
+plateletCount: Low <150 (thrombocytopenia - bleeding risk) | Normal 150-400 | High >400 (thrombocytosis/reactive)
+lymphocytes: Low <1.0 (lymphopenia - immune suppression) | Normal 1.0-4.8 | High >4.8 (lymphocytosis/viral/lymphoma)
 `;
 
 const LOINC_CODES = `
@@ -249,6 +273,11 @@ LOINC CODES AND UNITS:
 61. Albumin/Creatinine Urine ACR: 14958-3, mg/g
 62. NTproBNP: 33762-6, pg/mL
 63. INR PT: 5895-7, ratio
+64. Ferritin: 2276-4, ng/mL
+65. Uric Acid: 3084-1, mg/dL
+66. Neutrophils: 26499-4, 10^3/uL
+67. Platelet Count: 777-3, 10^3/uL
+68. Lymphocytes: 731-0, 10^3/uL
 `;
 
 // ── System Prompt ────────────────────────────────────
