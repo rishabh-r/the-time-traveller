@@ -1088,11 +1088,15 @@ async function handleSend() {
   input.value = "";
   input.style.height = "auto";
   sendBtn.disabled = true;
+  input.disabled = true;
+  input.placeholder = "CareBridge is responding...";
 
   appendMessage("user", text);
   await agentLoop(text);
 
   sendBtn.disabled = false;
+  input.disabled = false;
+  input.placeholder = "Ask about patient records, labs...";
   input.focus();
 }
 
