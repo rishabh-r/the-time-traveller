@@ -1,0 +1,61 @@
+Procedure and their code
+
+1. **Section Header:** Evaluation and Management  
+   **Subsection Header:** Consultations  
+   **Min Code:** 99241  
+   **Max Code:** 99255  
+
+2. **Section Header:** Surgery  
+   **Subsection Header:** Musculoskeletal System  
+   **Min Code:** 20000  
+   **Max Code:** 29999  
+
+3. **Section Header:** Surgery  
+   **Subsection Header:** Respiratory System  
+   **Min Code:** 30000  
+   **Max Code:** 32999  
+
+4. **Section Header:** Surgery  
+   **Subsection Header:** Cardiovascular System  
+   **Min Code:** 33010  
+   **Max Code:** 37799  
+
+5. **Section Header:** Radiology  
+   **Subsection Header:** Diagnostic Ultrasound  
+   **Min Code:** 76506  
+   **Max Code:** 76999  
+
+6. **Section Header:** Medicine  
+   **Subsection Header:** Dialysis  
+   **Min Code:** 90935  
+   **Max Code:** 90999  
+
+7. **Section Header:** Medicine  
+   **Subsection Header:** Cardiovascular  
+   **Min Code:** 92950  
+   **Max Code:** 93799  
+
+8. **Section Header:** Medicine  
+   **Subsection Header:** Pulmonary  
+   **Min Code:** 94002  
+   **Max Code:** 94799  
+
+9. **Section Header:** Evaluation and Management  
+   **Subsection Header:** Hospital Inpatient Services  
+   **Min Code:** 99221  
+   **Max Code:** 99239  
+
+10. **Section Header:** Evaluation and Management  
+    **Subsection Header:** Follow-up Inpatient Consultations  
+    **Min Code:** 99261  
+    **Max Code:** 99263  
+
+11. **Section Header:** Evaluation and Management  
+    **Subsection Header:** Critical Care Services  
+    **Min Code:** 99291  
+    **Max Code:** 99292  
+
+12. **Section Header:** Evaluation and Management  
+    **Subsection Header:** Case Management Services  
+    **Min Code:** 99363  
+    **Max Code:** 99368  
