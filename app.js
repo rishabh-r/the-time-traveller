@@ -808,8 +808,8 @@ function finalizeStreamingBubble(bubble, fullText) {
 async function agentLoop(userMessage) {
   conversationHistory.push({ role: "user", content: userMessage });
 
-  // Keep only the last 20 messages to limit token usage per request
-  const trimmedHistory = conversationHistory.slice(-20);
+  // Keep only the last 15 messages to limit token usage per request
+  const trimmedHistory = conversationHistory.slice(-15);
 
   const messages = [
     { role: "system", content: getSystemPrompt() },
