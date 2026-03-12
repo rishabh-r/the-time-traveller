@@ -568,6 +568,24 @@ html, body {
 .msg-time { font-size: 9.5px; color: var(--text-light); margin-top: 3px; padding: 0 3px; }
 .msg-row.user .msg-time { text-align: right; }
 
+/* ─── Table styles inside chat bubbles ─── */
+.table-wrapper { overflow-x: auto; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border); }
+.msg-bubble table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.msg-bubble th {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white; padding: 8px 12px; text-align: left;
+  font-weight: 600; font-size: 11.5px; letter-spacing: 0.3px;
+}
+.msg-bubble th:first-child { border-radius: 7px 0 0 0; }
+.msg-bubble th:last-child  { border-radius: 0 7px 0 0; }
+.msg-bubble td {
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  color: var(--text-dark); vertical-align: top;
+}
+.msg-bubble tr:last-child td { border-bottom: none; }
+.msg-bubble tbody tr:nth-child(even) { background: rgba(0,181,204,0.05); }
+.msg-bubble tbody tr:hover { background: rgba(0,181,204,0.1); transition: background .15s; }
+
 /* Typing indicator */
 .typing-indicator {
   display: flex; align-items: center; gap: 8px;

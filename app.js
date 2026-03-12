@@ -945,7 +945,8 @@ function formatTime() {
 
 // Markdown renderer using marked.js (handles numbered lists, bullets, bold, code, etc.)
 function simpleMarkdown(text) {
-  return marked.parse(text || "");
+  const parsed = marked.parse(text || "");
+  return parsed.replace(/<table>/g, '<div class="table-wrapper"><table>').replace(/<\/table>/g, '</table></div>');
 }
 
 function appendMessage(role, text) {
