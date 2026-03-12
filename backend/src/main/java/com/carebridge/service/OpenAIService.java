@@ -181,10 +181,28 @@ public class OpenAIService {
                              String fhirToken,
                              SseEmitter emitter) throws Exception {
 
-        // Build the working message list: system + conversation history
+        // Trim history to last 20 messages to reduce token usage.
+        // Always start from the first 'user' message in the slice
+        // to avoid orphaned tool-call messages that OpenAI rejects.
+        final int HISTORY_LIMIT = 20;
+        List<JsonNode> history = frontendMessages;
+        if (frontendMessages.size() > HISTORY_LIMIT) {
+            List<JsonNode> sliced = frontendMessages.subList(
+                    frontendMessages.size() - HISTORY_LIMIT, frontendMessages.size());
+            int firstUserIdx = 0;
+            for (int i = 0; i < sliced.size(); i++) {
+                if ("user".equals(sliced.get(i).path("role").asText())) {
+                    firstUserIdx = i;
+                    break;
+                }
+            }
+            history = sliced.subList(firstUserIdx, sliced.size());
+        }
+
+        // Build the working message list: system + trimmed conversation history
         List<ObjectNode> messages = new ArrayList<>();
         messages.add(systemMessage());
-        for (JsonNode msg : frontendMessages) {
+        for (JsonNode msg : history) {
             messages.add((ObjectNode) mapper.createObjectNode().setAll((ObjectNode) msg.deepCopy()));
         }
 
