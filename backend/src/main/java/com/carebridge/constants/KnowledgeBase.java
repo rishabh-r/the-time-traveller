@@ -73,6 +73,11 @@ LOINC CODES AND UNITS:
 61. Albumin/Creatinine Urine ACR: 14958-3, mg/g
 62. NTproBNP: 33762-6, pg/mL
 63. INR PT: 5895-7, ratio
+64. Ferritin: 2276-4, ng/mL
+65. Uric Acid: 3084-1, mg/dL
+66. Neutrophils Absolute: 751-8, 10^3/uL
+67. Platelet Count: 777-3, 10^3/uL
+68. Lymphocytes Absolute: 731-0, 10^3/uL
 """;
 
     public static final String CONDITION_CODES = """
@@ -118,7 +123,17 @@ V4511=Renal dialysis status, V560=Renal dialysis encounter,
 25022=DMII hprosmlr uncontrold, 25032=DMII oth coma uncontrold, 25040=DMII renl nt st uncntrld,
 25042=DMII renal uncntrld, 25052=DMII ophth uncntrld, 25060=DMII neuro nt st uncntrl,
 25072=DMII circ uncntrld, 2510=Hypoglycemic coma, 2511=Oth spcf hypoglycemia,
-4254=Prim cardiomyopathy NEC, 42823=Ac on chr syst hrt fail, 5184=Acute lung edema NOS
+4254=Prim cardiomyopathy NEC, 42823=Ac on chr syst hrt fail, 5184=Acute lung edema NOS,
+20071=Large cell lymphoma lymph nod head/face/neck, 20073=Large cell lymphoma lymph nod axilla/arm,
+20078=Large cell lymphoma lymph nod multiple sites, 20000=Reticulosarcoma unsp extrnodal, 20001=Reticulosarcoma lymph nodes head/face/neck,
+2853=Antineoplastic chemo-induced anemia, 28749=Oth prim thrombocytopenia NEC, 28800=Neutropenia unspecified,
+28802=Cyclic neutropenia, 28809=Neutropenia NEC, 52801=Mucositis antineoplastic therapy,
+52809=Mucositis NEC, 99581=Infection due to central venous catheter, 20280=Oth mal lymphoma unsp extrnodal,
+20021=Nodular lymphoma lymph nod head/face/neck, 20220=Foll mixed lymph unsp extrnodal,
+01100=Pulm TB infiltrative-unspecified, 01190=Pulm TB unspecified-unspecified,
+1123=Candidiasis of skin/nail, 1170=Rhinosporidiosis, 1190=Mycoses NOS,
+1200=Schistosomiasis NOS, 1800=Malig neo cervix uteri NOS, 5733=Hepatitis NOS,
+78630=Hemoptysis unspecified
 """;
 
     public static final String DRUG_CODES = """
@@ -143,7 +158,20 @@ EMPA10, EMPA25, FURO40, FURO80, FURO_IV, FURO40IV, FURO80IV, FURO80PO, GABA300, 
 GLUC1MG, GTN_IV, HEPAR_IV, HYPTON_SAL, INS_REG, IVAB5, KCL_IV, KCL_IV40, KCL_PO,
 LABE_IV, METF500, METF1000, METO_IV, MGSO4_IV, MORPH_IV, NAHCO500, NAHCO_IV, NORA_IV, NOREPI,
 OMEP20, PIP_TAZO, PROP_IV, RAMI25, RAMI5, RAMI10, SEMA05, NS_045, NS_09,
-SPIRO25, SPIRO125, VANC_IV, WARF3
+SPIRO25, SPIRO125, VANC_IV, WARF3,
+RITU375, RITU_IV, CYCLO_IV, CYCLO_PO, DOXO_IV, DOXO50, BEND_IV, BEND90, BEND120,
+POLA_VED, POLA18, MELPH_IV, MELPH140, MELPH200, MELPH_PO, PRED60, PRED100, PRED_HD,
+VINC_IV, VINC14, ETOPO_IV, ETOPO100, ETOPO_PO, CARBO_IV, CARBO_AUC, DEXA_HD, DEXA20,
+GCSF_SC, GCSF300, GCSF480, PEGFILG, MESNA_IV, MESNA_PO, LENALI10, LENALI15, LENALI25,
+IBRUT420, IBRUT560, VENETO100, VENETO200, VENETO400, ACYCL200, ACYCL400, ACYCL_IV,
+TMPSMX_DS, TMPSMX_SS, TMPSMX_IV, ONDANS4, ONDANS8, ONDANS_IV, APREPITANT, FOSAPREPITANT,
+FLUCON150, FLUCON200, VORICONAZOLE, POSACONAZOLE, CYTARABINE, CYTARAB_IT, METHO_IT,
+METHO_HD, METHO_IV, HYDROCORT, THALIDOMIDE, BORTEZOMIB, OBINUTUZUMAB, ACALABRUTINIB,
+ISONI300, ISONI_IV, RIFAM450, RIFAM600, RIFAM_IV, PYRAZI25G, PYRAZI_PO, ETHAMB15G,
+ETHAMB_PO, MOXI400, MOXI_IV, PYRIDOX25, PYRIDOX50, PYRIDOX_IV, AMIKA_IV, AMIKA500,
+STREPT_IM, CAPRIO_IM, BEDAQUIL400, BEDAQUIL200, DELAMANID50, LINEZOLID_TB, LINEZOLID600,
+RIFABUTIN150, RIFABUTIN300, CLOFAZI50, CLOFAZI100, CYCLOSERINE, TERIZIDON,
+PREDNIS40, PREDNIS_TB, ETHIN250, PROTIONAMIDE
 """;
 
     public static final String PROCEDURE_CODES = """
@@ -165,6 +193,14 @@ PROCEDURE CPT CODE RANGES:
 - Medicine / Infusions and Injections: 96360–96549
 - Medicine / Physical Medicine & Rehabilitation: 97001–97799
 - Medicine / Medical Nutrition Therapy: 97802–97804
+- Radiology / Diagnostic Radiology (Chest): 71001–71555
+- Nuclear Medicine / PET and PET-CT Imaging: 78800–78999
+- Surgery / Hemic and Lymphatic System: 38100–38999
+- Pathology & Laboratory / Hematology: 85001–85999
+- Pathology & Laboratory / Immunology: 86000–86849
+- Pathology & Laboratory / Microbiology: 87001–87999
+- Pathology & Laboratory / Anatomic Pathology: 88001–88399
+- Medicine / Neurology and Neuromuscular: 95800–95999
 
 SPECIFIC PROCEDURE CODES:
 36821=AV Fistula Creation autogenous, 36903=AV Fistula Revision Thrombectomy,
@@ -180,7 +216,30 @@ SPECIFIC PROCEDURE CODES:
 97597=Wound debridement open wound first 20 sq cm, 97803=Renal diet reassessment 30 min,
 99222=Hospital inpatient visit initial moderate, 99223=Hospital inpatient visit initial high,
 99232=Hospital subsequent visit moderate, 99233=Hospital subsequent visit high,
-99254=Inpatient consultation, 99291=Critical care first 30-74 minutes
+99254=Inpatient consultation, 99291=Critical care first 30-74 minutes,
+78816=PET-CT whole body oncology imaging, 78815=PET-CT skull base to thigh,
+38222=Bone marrow biopsy and aspiration, 38220=Bone marrow aspiration only,
+38241=Autologous hematopoietic stem cell transplant, 38240=Allogeneic stem cell transplant,
+38206=Peripheral blood stem cell harvest autologous, 38205=Stem cell harvest allogeneic,
+96413=Chemotherapy infusion first hour intravenous, 96415=Chemotherapy infusion subsequent hour,
+96417=Sequential IV infusion new drug add-on, 96416=Sequential chemo infusion same drug,
+96450=Intrathecal chemotherapy injection, 96420=Intra-arterial chemo push,
+62270=Lumbar puncture diagnostic spinal tap, 62272=Lumbar puncture therapeutic drainage,
+88305=Lymph node tissue biopsy surgical pathology, 88307=Complex tissue biopsy pathology,
+88182=Flow cytometry immunophenotyping per marker, 88184=Flow cytometry first marker cell surface,
+88187=Flow cytometry interpretation 2-8 markers, 88188=Flow cytometry interpretation 9-15 markers,
+85025=Complete CBC with automated differential, 85027=CBC automated without differential,
+71046=Chest X-ray 2 views PA and lateral, 71045=Chest X-ray single view AP,
+71250=CT thorax without contrast, 71260=CT thorax with contrast, 71270=CT thorax without and with contrast,
+87116=Mycobacterial culture AFB for tuberculosis, 87118=Mycobacteria additional methods,
+87560=Tuberculosis MTB nucleic acid GeneXpert MTB RIF, 87556=Mycobacterium tuberculosis direct probe,
+94010=Spirometry with flow volume loop, 94060=Spirometry bronchodilator response,
+94375=Flow volume loop respiratory,
+31622=Bronchoscopy with biopsy, 31625=Bronchoscopy with bronchial biopsy,
+31623=Bronchoscopy with brushing, 31624=Bronchoscopy with BAL bronchoalveolar lavage,
+32554=Thoracentesis fluid aspiration first attempt, 32555=Thoracentesis with imaging guidance,
+86480=Tuberculin PPD skin test intradermal, 86481=Tuberculin purified protein derivative,
+87480=IGRA TB interferon gamma release assay
 """;
 
     public static final String OBSERVATION_RANGES = """
@@ -245,5 +304,10 @@ triglycerides: Low <0.0 | Normal 0.0-150 mg/dL | High >150 (cardiovascular risk 
 albuminCreatinineRatioUrine: Low <0.0 | Normal <30 mg/g | High >30 (microalbuminuria 30-300 = early kidney damage, macroalbuminuria >300 = significant kidney disease)
 NTproBNP: Low <0.0 | Normal <125 pg/mL (age <75) / <450 pg/mL (age ≥75) | High >125 (heart failure — >900 acute HF likely, >1800 severe)
 INR: Low <0.8 (hypercoagulable state) | Normal 0.8-1.2 | High >1.2 (bleeding risk — therapeutic range for anticoagulation: 2.0-3.0)
+ferritin: Low <15 ng/mL (iron deficiency/depletion) | Normal 15-300 (men), 15-150 (women) | High >300 (inflammation, iron overload; markedly elevated in lymphoma, HLH, sepsis — levels >1000 may indicate hemophagocytic syndrome)
+uricAcid: Low <2.4 mg/dL | Normal 2.4-7.0 (men), 2.4-6.0 (women) | High >7.0 (hyperuricemia — gout, tumor lysis syndrome in lymphoma/leukemia; critical >10.0 requires urgent treatment)
+neutrophilsAbsolute: Low <1.5 10^3/uL (neutropenia — <1.0 moderate, <0.5 severe/febrile neutropenia requiring G-CSF/antibiotics) | Normal 1.5-8.0 | High >8.0 (neutrophilia — bacterial infection, post-chemotherapy recovery, steroid effect)
+plateletCount: Low <150 10^3/uL (thrombocytopenia — <50 bleeding risk, <20 spontaneous bleed risk; common in lymphoma, chemo, TB, DIC) | Normal 150-400 | High >400 (thrombocytosis — reactive/post-splenectomy/essential thrombocythemia)
+lymphocytesAbsolute: Low <1.0 10^3/uL (lymphopenia — common in active TB, lymphoma, chemotherapy, HIV; <0.5 severe immunosuppression) | Normal 1.0-4.0 | High >4.0 (lymphocytosis — viral infection, CLL, lymphoma, pertussis)
 """;
 }
