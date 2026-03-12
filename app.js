@@ -808,9 +808,9 @@ function finalizeStreamingBubble(bubble, fullText) {
 async function agentLoop(userMessage) {
   conversationHistory.push({ role: "user", content: userMessage });
 
-  // Keep only the last 15 messages, starting from a clean user message boundary
+  // Keep only the last 20 messages, starting from a clean user message boundary
   // to avoid orphaned tool role messages that OpenAI rejects
-  const sliced = conversationHistory.slice(-15);
+  const sliced = conversationHistory.slice(-20);
   const firstUserIdx = sliced.findIndex(m => m.role === "user");
   const trimmedHistory = firstUserIdx > 0 ? sliced.slice(firstUserIdx) : sliced;
 
