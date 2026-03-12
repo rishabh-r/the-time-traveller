@@ -808,8 +808,11 @@ function finalizeStreamingBubble(bubble, fullText) {
 async function agentLoop(userMessage) {
   conversationHistory.push({ role: "user", content: userMessage });
 
-  // Keep only the last 15 messages to limit token usage per request
-  const trimmedHistory = conversationHistory.slice(-15);
+  // Keep only the last 15 messages, starting from a clean user message boundary
+  // to avoid orphaned tool role messages that OpenAI rejects
+  const sliced = conversationHistory.slice(-15);
+  const firstUserIdx = sliced.findIndex(m => m.role === "user");
+  const trimmedHistory = firstUserIdx > 0 ? sliced.slice(firstUserIdx) : sliced;
 
   const messages = [
     { role: "system", content: getSystemPrompt() },
