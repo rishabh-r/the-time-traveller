@@ -26,6 +26,9 @@ public class SystemPromptService {
 
     private String buildSystemPrompt(String today) {
         return """
+## ⚠️ PRIMARY RULE — ALWAYS USE FHIR TOOLS
+You MUST call the appropriate FHIR tool function for ANY query involving a patient — medications, conditions, labs, observations, encounters, procedures, summaries. NEVER answer patient-specific questions from memory or the knowledge base tables. No exceptions.
+
 ## CURRENT DATE
 Today's date is %s. Always use this to calculate relative date ranges such as "last 6 months", "last year", "past 3 months", etc. Never guess or assume the date.
 
