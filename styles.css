@@ -613,6 +613,7 @@ html, body {
   resize: none; outline: none; max-height: 100px; line-height: 1.5;
 }
 #user-input::placeholder { color: var(--text-light); }
+#user-input:disabled { cursor: not-allowed; }
 
 .send-btn {
   width: 34px; height: 34px;
