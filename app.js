@@ -7,7 +7,7 @@
 // OpenAI API key is stored in localStorage (entered by user on first run)
 // Never hardcode API keys in source code
 let OPENAI_API_KEY = localStorage.getItem("cb_oai_key") || "";
-const OPENAI_MODEL   = "gpt-4.1-mini";
+const OPENAI_MODEL   = "gpt-5-mini";
 const FHIR_BASE      = "https://fhirassist.rsystems.com:481";
 const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 
@@ -15,6 +15,7 @@ const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 let conversationHistory = [];
 let userName = "";
 let userInitial = "U";
+let isBotResponding = false;
 
 // ── Knowledge Bases (embedded) ───────────────────────
 const CONDITION_CODES = `
@@ -1088,15 +1089,15 @@ async function handleSend() {
 
   input.value = "";
   input.style.height = "auto";
+  isBotResponding = true;
   sendBtn.disabled = true;
-  input.disabled = true;
   input.placeholder = "CareBridge is responding...";
 
   appendMessage("user", text);
   await agentLoop(text);
 
+  isBotResponding = false;
   sendBtn.disabled = false;
-  input.disabled = false;
   input.placeholder = "Ask about patient records, labs...";
   input.focus();
 }
@@ -1228,14 +1229,15 @@ document.addEventListener("DOMContentLoaded", () => {
   userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      const sendBtn = document.getElementById("send-btn");
+      if (!sendBtn.disabled) handleSend();
     }
   });
 
   // Auto-resize textarea
   userInput.addEventListener("input", () => {
     const sendBtn = document.getElementById("send-btn");
-    sendBtn.disabled = userInput.value.trim() === "";
+    sendBtn.disabled = isBotResponding || userInput.value.trim() === "";
     userInput.style.height = "auto";
     userInput.style.height = Math.min(userInput.scrollHeight, 100) + "px";
   });

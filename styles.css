@@ -575,6 +575,7 @@ html, body {
   background: linear-gradient(135deg, var(--teal), var(--teal-dark));
   color: white; padding: 8px 12px; text-align: left;
   font-weight: 600; font-size: 11.5px; letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 .msg-bubble th:first-child { border-radius: 7px 0 0 0; }
 .msg-bubble th:last-child  { border-radius: 0 7px 0 0; }
