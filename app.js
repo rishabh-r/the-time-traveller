@@ -15,6 +15,7 @@ const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 let conversationHistory = [];
 let userName = "";
 let userInitial = "U";
+let isBotResponding = false;
 
 // ── Knowledge Bases (embedded) ───────────────────────
 const CONDITION_CODES = `
@@ -1088,12 +1089,14 @@ async function handleSend() {
 
   input.value = "";
   input.style.height = "auto";
+  isBotResponding = true;
   sendBtn.disabled = true;
   input.placeholder = "CareBridge is responding...";
 
   appendMessage("user", text);
   await agentLoop(text);
 
+  isBotResponding = false;
   sendBtn.disabled = false;
   input.placeholder = "Ask about patient records, labs...";
   input.focus();
@@ -1234,7 +1237,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Auto-resize textarea
   userInput.addEventListener("input", () => {
     const sendBtn = document.getElementById("send-btn");
-    sendBtn.disabled = userInput.value.trim() === "";
+    sendBtn.disabled = isBotResponding || userInput.value.trim() === "";
     userInput.style.height = "auto";
     userInput.style.height = Math.min(userInput.scrollHeight, 100) + "px";
   });
