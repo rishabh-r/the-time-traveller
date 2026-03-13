@@ -1226,7 +1226,8 @@ document.addEventListener("DOMContentLoaded", () => {
   userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      const sendBtn = document.getElementById("send-btn");
+      if (!sendBtn.disabled) handleSend();
     }
   });
 
