@@ -624,7 +624,7 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
     const waitSec = Math.ceil(waitMs / 1000);
     const typingBubble = document.querySelector(".typing-bubble");
     if (typingBubble) {
-      typingBubble.innerHTML = `<span style="font-size:11px;color:#4a5568">Rate limit reached. Retrying in ${waitSec}s...</span>`;
+      typingBubble.innerHTML = `<span style="font-size:11px;color:#4a5568">Processing your request, please wait...</span>`;
     }
     await sleep(waitMs);
     if (typingBubble) {
