@@ -832,16 +832,9 @@ async function agentLoop(userMessage) {
 
   try {
     while (true) {
-      // Haiku only — all rounds including final response
-      let chunkAccum = "";
-      const result = await sendToClaude(systemPrompt, messages, (chunk) => {
-        if (!streamBubble) {
-          hideTyping();
-          streamBubble = createStreamingBubble();
-        }
-        chunkAccum += chunk;
-        updateStreamingBubble(streamBubble, chunkAccum);
-      }, 0, CLAUDE_FAST);
+      // Haiku for all tool routing (fast, high rate limits)
+      // No streaming for Haiku — its text is discarded
+      const result = await sendToClaude(systemPrompt, messages, null, 0, CLAUDE_FAST);
 
       const isToolCall = result.stop_reason === "tool_use" ||
                          (result.tool_calls && result.tool_calls.length > 0);
@@ -891,8 +884,20 @@ async function agentLoop(userMessage) {
         await sleep(1000);
 
       } else {
-        // Final text response
-        const finalText = result.content || "";
+        // All tools done — call Sonnet ONCE for the final user-facing response
+        let chunkAccum = "";
+        streamBubble = null;
+        showTyping();
+        const sonnetResult = await sendToClaude(systemPrompt, messages, (chunk) => {
+          if (!streamBubble) {
+            hideTyping();
+            streamBubble = createStreamingBubble();
+          }
+          chunkAccum += chunk;
+          updateStreamingBubble(streamBubble, chunkAccum);
+        }, 0, CLAUDE_MODEL);
+
+        const finalText = sonnetResult.content || "";
         conversationHistory.push({ role: "assistant", content: finalText });
         if (streamBubble) {
           finalizeStreamingBubble(streamBubble, finalText);
