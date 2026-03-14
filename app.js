@@ -8,6 +8,7 @@
 // Never hardcode API keys in source code
 let ANTHROPIC_API_KEY = localStorage.getItem("cb_anthropic_key") || "";
 const CLAUDE_MODEL   = "claude-sonnet-4-6";
+const CLAUDE_FAST    = "claude-haiku-4-5-20251001";  // For tool-calling rounds (faster, higher rate limits)
 const FHIR_BASE      = "https://fhirassist.rsystems.com:481";
 const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 
@@ -642,7 +643,7 @@ function getSystemPrompt() {
 
 // Streams the Anthropic Claude response. Calls onTextChunk(chunk) for each text delta.
 // Returns { content, tool_calls, stop_reason }.
-async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCount = 0) {
+async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCount = 0, model = CLAUDE_MODEL) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -652,7 +653,7 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
       "anthropic-dangerous-direct-browser-access": "true"
     },
     body: JSON.stringify({
-      model:     CLAUDE_MODEL,
+      model:     model,
       system:    systemPrompt,
       messages,
       tools:     TOOLS,
@@ -679,7 +680,7 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
     if (typingBubble) {
       typingBubble.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
     }
-    return sendToClaude(systemPrompt, messages, onTextChunk, retryCount + 1);
+    return sendToClaude(systemPrompt, messages, onTextChunk, retryCount + 1, model);
   }
 
   if (!res.ok) {
@@ -830,8 +831,12 @@ async function agentLoop(userMessage) {
   let streamBubble = null;
 
   try {
+    let loopRound = 0;
     while (true) {
       let chunkAccum = "";
+      // First round: Sonnet (might be a simple query with no tools)
+      // Subsequent rounds (after tool results): Haiku for tool routing, faster + higher rate limits
+      const useModel = loopRound === 0 ? CLAUDE_MODEL : CLAUDE_FAST;
 
       const result = await sendToClaude(systemPrompt, messages, (chunk) => {
         if (!streamBubble) {
@@ -840,7 +845,9 @@ async function agentLoop(userMessage) {
         }
         chunkAccum += chunk;
         updateStreamingBubble(streamBubble, chunkAccum);
-      });
+      }, 0, useModel);
+
+      loopRound++;
 
       const isToolCall = result.stop_reason === "tool_use" ||
                          (result.tool_calls && result.tool_calls.length > 0);
@@ -886,19 +893,42 @@ async function agentLoop(userMessage) {
         conversationHistory.push(toolResultMsg);
         showTyping();
 
-        // Delay between agent loop iterations to stay under Anthropic Sonnet rate limits
-        await sleep(5000);
+        // Small delay between iterations (Haiku has high rate limits, so 1s is enough)
+        await sleep(1000);
 
       } else {
-        // Final text response
-        const finalText = result.content || "";
-        conversationHistory.push({ role: "assistant", content: finalText });
+        // Final text response — if Haiku produced it after tool rounds,
+        // re-call with Sonnet for higher-quality user-facing answer
+        if (useModel === CLAUDE_FAST && loopRound > 1) {
+          chunkAccum = "";
+          streamBubble = null;
+          showTyping();
+          const sonnetResult = await sendToClaude(systemPrompt, messages, (chunk) => {
+            if (!streamBubble) {
+              hideTyping();
+              streamBubble = createStreamingBubble();
+            }
+            chunkAccum += chunk;
+            updateStreamingBubble(streamBubble, chunkAccum);
+          }, 0, CLAUDE_MODEL);
 
-        if (streamBubble) {
-          finalizeStreamingBubble(streamBubble, finalText);
+          const finalText = sonnetResult.content || "";
+          conversationHistory.push({ role: "assistant", content: finalText });
+          if (streamBubble) {
+            finalizeStreamingBubble(streamBubble, finalText);
+          } else {
+            hideTyping();
+            appendMessage("bot", finalText);
+          }
         } else {
-          hideTyping();
-          appendMessage("bot", finalText);
+          const finalText = result.content || "";
+          conversationHistory.push({ role: "assistant", content: finalText });
+          if (streamBubble) {
+            finalizeStreamingBubble(streamBubble, finalText);
+          } else {
+            hideTyping();
+            appendMessage("bot", finalText);
+          }
         }
         break;
       }
