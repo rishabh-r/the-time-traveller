@@ -1,13 +1,13 @@
 /* =====================================================
    CareBridge – Clinical AI Chatbot
-   OpenAI GPT-5 + FHIR R4 API Integration
+   Anthropic Claude + FHIR R4 API Integration
 ===================================================== */
 
 // ── Config ──────────────────────────────────────────
-// OpenAI API key is stored in localStorage (entered by user on first run)
+// Anthropic API key is stored in localStorage (entered by user on first run)
 // Never hardcode API keys in source code
-let OPENAI_API_KEY = localStorage.getItem("cb_oai_key") || "";
-const OPENAI_MODEL   = "gpt-5-mini";
+let ANTHROPIC_API_KEY = localStorage.getItem("cb_anthropic_key") || "";
+const CLAUDE_MODEL   = "claude-sonnet-4-6";
 const FHIR_BASE      = "https://fhirassist.rsystems.com:481";
 const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 
@@ -440,114 +440,93 @@ ${OBSERVATION_RANGES}
 `;
 }
 
-// ── OpenAI Tool Definitions ──────────────────────────
+// ── Anthropic Tool Definitions ──────────────────────────
 const TOOLS = [
   {
-    type: "function",
-    function: {
-      name: "search_fhir_patient",
-      description: "Search for patients in the FHIR system by name, email, phone, birthdate, or patient ID.",
-      parameters: {
-        type: "object",
-        properties: {
-          GIVEN:      { type: "string", description: "Patient first/given name" },
-          FAMILY:     { type: "string", description: "Patient last/family name" },
-          EMAIL:      { type: "string", description: "Patient email address" },
-          PHONE:      { type: "string", description: "Patient phone number" },
-          BIRTHDATE:  { type: "string", description: "Patient date of birth (YYYY-MM-DD)" },
-          PATIENT_ID: { type: "string", description: "Patient numeric ID" }
-        }
+    name: "search_fhir_patient",
+    description: "Search for patients in the FHIR system by name, email, phone, birthdate, or patient ID.",
+    input_schema: {
+      type: "object",
+      properties: {
+        GIVEN:      { type: "string", description: "Patient first/given name" },
+        FAMILY:     { type: "string", description: "Patient last/family name" },
+        EMAIL:      { type: "string", description: "Patient email address" },
+        PHONE:      { type: "string", description: "Patient phone number" },
+        BIRTHDATE:  { type: "string", description: "Patient date of birth (YYYY-MM-DD)" },
+        PATIENT_ID: { type: "string", description: "Patient numeric ID" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "search_patient_condition",
-      description: "Search patient conditions/diagnoses from FHIR. Can search by subject (patient ID) and/or ICD-9 code.",
-      parameters: {
-        type: "object",
-        properties: {
-          SUBJECT:   { type: "string", description: "Patient numeric ID (do NOT include 'Patient/' prefix)" },
-          CODE:      { type: "string", description: "ICD-9 diagnosis code" },
-          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
-        }
+    name: "search_patient_condition",
+    description: "Search patient conditions/diagnoses from FHIR. Can search by subject (patient ID) and/or ICD-9 code.",
+    input_schema: {
+      type: "object",
+      properties: {
+        SUBJECT:   { type: "string", description: "Patient numeric ID (do NOT include 'Patient/' prefix)" },
+        CODE:      { type: "string", description: "ICD-9 diagnosis code" },
+        ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "search_patient_procedure",
-      description: "Search patient procedures/surgeries from FHIR. Can search by subject and/or CPT code or code range.",
-      parameters: {
-        type: "object",
-        properties: {
-          SUBJECT:   { type: "string", description: "Patient numeric ID" },
-          CODE:      { type: "string", description: "CPT procedure code" },
-          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
-        }
+    name: "search_patient_procedure",
+    description: "Search patient procedures/surgeries from FHIR. Can search by subject and/or CPT code or code range.",
+    input_schema: {
+      type: "object",
+      properties: {
+        SUBJECT:   { type: "string", description: "Patient numeric ID" },
+        CODE:      { type: "string", description: "CPT procedure code" },
+        ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "search_patient_medications",
-      description: "Search patient medication requests/prescriptions from FHIR.",
-      parameters: {
-        type: "object",
-        properties: {
-          SUBJECT:        { type: "string", description: "Patient numeric ID" },
-          CODE:           { type: "string", description: "Drug code (e.g. INSULIN, ACET325)" },
-          PRESCRIPTIONID: { type: "string", description: "Prescription ID number" }
-        }
+    name: "search_patient_medications",
+    description: "Search patient medication requests/prescriptions from FHIR.",
+    input_schema: {
+      type: "object",
+      properties: {
+        SUBJECT:        { type: "string", description: "Patient numeric ID" },
+        CODE:           { type: "string", description: "Drug code (e.g. INSULIN, ACET325)" },
+        PRESCRIPTIONID: { type: "string", description: "Prescription ID number" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "search_patient_encounter",
-      description: "Search patient encounters (admissions, discharges, insurance info) from FHIR.",
-      parameters: {
-        type: "object",
-        properties: {
-          SUBJECT: { type: "string", description: "Patient numeric ID" },
-          DATE:    { type: "string", description: "Start date filter e.g. 'gt2000-01-13' (gt=after, lt=before)" },
-          DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" }
-        }
+    name: "search_patient_encounter",
+    description: "Search patient encounters (admissions, discharges, insurance info) from FHIR.",
+    input_schema: {
+      type: "object",
+      properties: {
+        SUBJECT: { type: "string", description: "Patient numeric ID" },
+        DATE:    { type: "string", description: "Start date filter e.g. 'gt2000-01-13' (gt=after, lt=before)" },
+        DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "search_patient_observations",
-      description: "Search patient lab results, vitals, and clinical observations from FHIR.",
-      parameters: {
-        type: "object",
-        properties: {
-          SUBJECT:        { type: "string", description: "Patient numeric ID" },
-          CODE:           { type: "string", description: "LOINC observation code" },
-          value_quantity: { type: "string", description: "Filter by value e.g. 'gt10|mEq/L' or 'lt5|mg/dL'" },
-          page:           { type: "number", description: "Page number for pagination, starting at 0" }
-        }
+    name: "search_patient_observations",
+    description: "Search patient lab results, vitals, and clinical observations from FHIR.",
+    input_schema: {
+      type: "object",
+      properties: {
+        SUBJECT:        { type: "string", description: "Patient numeric ID" },
+        CODE:           { type: "string", description: "LOINC observation code" },
+        value_quantity: { type: "string", description: "Filter by value e.g. 'gt10|mEq/L' or 'lt5|mg/dL'" },
+        page:           { type: "number", description: "Page number for pagination, starting at 0" }
       }
     }
   },
   {
-    type: "function",
-    function: {
-      name: "end_chat",
-      description: "End the conversation when the user explicitly indicates they are done (says 'no', 'nothing else', 'that's all', 'goodbye', 'bye', 'thank you' in a closing context).",
-      parameters: {
-        type: "object",
-        properties: {
-          farewell_message: { type: "string", description: "A short professional closing message to the user." }
-        },
-        required: ["farewell_message"]
-      }
+    name: "end_chat",
+    description: "End the conversation when the user explicitly indicates they are done (says 'no', 'nothing else', 'that's all', 'goodbye', 'bye', 'thank you' in a closing context).",
+    input_schema: {
+      type: "object",
+      properties: {
+        farewell_message: { type: "string", description: "A short professional closing message to the user." }
+      },
+      required: ["farewell_message"]
     }
   }
 ];
@@ -646,7 +625,7 @@ async function executeTool(name, args) {
   }
 }
 
-// ── OpenAI Streaming Chat Completion (with auto-retry on rate limit) ──
+// ── Anthropic Claude Streaming Chat (with auto-retry on rate limit) ──
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 // Cached system prompt — rebuilt daily so the current date stays accurate
@@ -661,21 +640,24 @@ function getSystemPrompt() {
   return _systemPromptCache;
 }
 
-// Streams the OpenAI response. Calls onTextChunk(chunk) for each text delta.
-// Returns { content, tool_calls, finish_reason }.
-async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+// Streams the Anthropic Claude response. Calls onTextChunk(chunk) for each text delta.
+// Returns { content, tool_calls, stop_reason }.
+async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCount = 0) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${OPENAI_API_KEY}`,
-      "Content-Type":  "application/json"
+      "x-api-key":       ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+      "Content-Type":    "application/json",
+      "anthropic-dangerous-direct-browser-access": "true"
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model:     CLAUDE_MODEL,
+      system:    systemPrompt,
       messages,
-      tools: TOOLS,
-      tool_choice: "auto",
-      stream: true
+      tools:     TOOLS,
+      max_tokens: 8192,
+      stream:    true
     })
   });
 
@@ -697,20 +679,21 @@ async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
     if (typingBubble) {
       typingBubble.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
     }
-    return sendToOpenAI(messages, onTextChunk, retryCount + 1);
+    return sendToClaude(systemPrompt, messages, onTextChunk, retryCount + 1);
   }
 
   if (!res.ok) {
-    const errJson = await res.json();
-    throw new Error(errJson.error?.message || "OpenAI API error");
+    const errJson = await res.json().catch(() => ({}));
+    throw new Error(errJson.error?.message || `Anthropic API error (${res.status})`);
   }
 
-  // Parse SSE stream
+  // Parse Anthropic SSE stream
   const reader  = res.body.getReader();
   const decoder = new TextDecoder();
   let fullContent   = "";
-  const toolCallsMap = {};
-  let finishReason  = null;
+  const toolCalls   = [];   // {id, name, input_json}
+  let currentBlock  = null; // tracks current content block being streamed
+  let stopReason    = null;
   let buffer        = "";
 
   while (true) {
@@ -719,47 +702,60 @@ async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
 
     buffer += decoder.decode(value, { stream: true });
     const lines = buffer.split("\n");
-    buffer = lines.pop(); // keep incomplete line
+    buffer = lines.pop();
 
     for (const line of lines) {
       if (!line.startsWith("data: ")) continue;
       const data = line.slice(6).trim();
-      if (data === "[DONE]") { finishReason = finishReason || "stop"; continue; }
       if (!data) continue;
 
       try {
         const parsed = JSON.parse(data);
-        const choice = parsed.choices?.[0];
-        if (!choice) continue;
 
-        if (choice.finish_reason) finishReason = choice.finish_reason;
-
-        const delta = choice.delta;
-        if (delta?.content) {
-          fullContent += delta.content;
-          if (onTextChunk) onTextChunk(delta.content);
-        }
-
-        if (delta?.tool_calls) {
-          for (const tc of delta.tool_calls) {
-            const idx = tc.index;
-            if (!toolCallsMap[idx]) {
-              toolCallsMap[idx] = { id: "", type: "function", function: { name: "", arguments: "" } };
+        switch (parsed.type) {
+          case "content_block_start": {
+            const block = parsed.content_block;
+            if (block.type === "tool_use") {
+              currentBlock = { type: "tool_use", id: block.id, name: block.name, input_json: "" };
+            } else if (block.type === "text") {
+              currentBlock = { type: "text" };
             }
-            if (tc.id)                 toolCallsMap[idx].id                   += tc.id;
-            if (tc.function?.name)     toolCallsMap[idx].function.name        += tc.function.name;
-            if (tc.function?.arguments) toolCallsMap[idx].function.arguments  += tc.function.arguments;
+            break;
+          }
+          case "content_block_delta": {
+            const delta = parsed.delta;
+            if (delta.type === "text_delta") {
+              fullContent += delta.text;
+              if (onTextChunk) onTextChunk(delta.text);
+            } else if (delta.type === "input_json_delta" && currentBlock?.type === "tool_use") {
+              currentBlock.input_json += delta.partial_json;
+            }
+            break;
+          }
+          case "content_block_stop": {
+            if (currentBlock?.type === "tool_use") {
+              toolCalls.push({
+                id:    currentBlock.id,
+                name:  currentBlock.name,
+                input: JSON.parse(currentBlock.input_json || "{}")
+              });
+            }
+            currentBlock = null;
+            break;
+          }
+          case "message_delta": {
+            if (parsed.delta?.stop_reason) stopReason = parsed.delta.stop_reason;
+            break;
           }
         }
       } catch (e) { /* ignore malformed chunks */ }
     }
   }
 
-  const toolCallsList = Object.values(toolCallsMap);
   return {
-    content:       fullContent || null,
-    tool_calls:    toolCallsList.length ? toolCallsList : null,
-    finish_reason: finishReason || (toolCallsList.length ? "tool_calls" : "stop")
+    content:     fullContent || null,
+    tool_calls:  toolCalls.length ? toolCalls : null,
+    stop_reason: stopReason || (toolCalls.length ? "tool_use" : "end_turn")
   };
 }
 
@@ -813,20 +809,22 @@ function finalizeStreamingBubble(bubble, fullText) {
   scrollToBottom();
 }
 
-// ── Agentic Loop: handles multiple tool calls with streaming ──
+// ── Agentic Loop: handles multiple tool calls with streaming (Anthropic) ──
 async function agentLoop(userMessage) {
   conversationHistory.push({ role: "user", content: userMessage });
 
   // Keep only the last 20 messages, starting from a clean user message boundary
-  // to avoid orphaned tool role messages that OpenAI rejects
+  // to avoid orphaned tool_result messages that Anthropic rejects
   const sliced = conversationHistory.slice(-20);
-  const firstUserIdx = sliced.findIndex(m => m.role === "user");
+  // Find first real user message (not a tool_result user message)
+  const firstUserIdx = sliced.findIndex(m =>
+    m.role === "user" && (typeof m.content === "string" || (Array.isArray(m.content) && m.content.some(b => b.type === "text")))
+  );
   const trimmedHistory = firstUserIdx > 0 ? sliced.slice(firstUserIdx) : sliced;
 
-  const messages = [
-    { role: "system", content: getSystemPrompt() },
-    ...trimmedHistory
-  ];
+  // Anthropic: system prompt is separate, not in messages array
+  const systemPrompt = getSystemPrompt();
+  const messages = [...trimmedHistory];
 
   showTyping();
   let streamBubble = null;
@@ -835,8 +833,7 @@ async function agentLoop(userMessage) {
     while (true) {
       let chunkAccum = "";
 
-      const result = await sendToOpenAI(messages, (chunk) => {
-        // First chunk — hide typing indicator and create live bubble
+      const result = await sendToClaude(systemPrompt, messages, (chunk) => {
         if (!streamBubble) {
           hideTyping();
           streamBubble = createStreamingBubble();
@@ -845,45 +842,49 @@ async function agentLoop(userMessage) {
         updateStreamingBubble(streamBubble, chunkAccum);
       });
 
-      const isToolCall = result.finish_reason === "tool_calls" ||
+      const isToolCall = result.stop_reason === "tool_use" ||
                          (result.tool_calls && result.tool_calls.length > 0);
 
       if (isToolCall) {
-        streamBubble = null; // reset for next iteration
+        streamBubble = null;
 
-        const assistantMsg = {
-          role:       "assistant",
-          content:    result.content || null,
-          tool_calls: result.tool_calls
-        };
+        // Build assistant message in Anthropic format (content array)
+        const assistantContent = [];
+        if (result.content) {
+          assistantContent.push({ type: "text", text: result.content });
+        }
+        for (const tc of result.tool_calls) {
+          assistantContent.push({ type: "tool_use", id: tc.id, name: tc.name, input: tc.input });
+        }
+        const assistantMsg = { role: "assistant", content: assistantContent };
         messages.push(assistantMsg);
         conversationHistory.push(assistantMsg);
 
         // Handle end_chat
-        const endCall = result.tool_calls.find(tc => tc.function.name === "end_chat");
+        const endCall = result.tool_calls.find(tc => tc.name === "end_chat");
         if (endCall) {
-          const args = JSON.parse(endCall.function.arguments || "{}");
           hideTyping();
-          appendMessage("bot", args.farewell_message || "Thank you for using CareBridge. Have a great day!");
+          appendMessage("bot", endCall.input.farewell_message || "Thank you for using CareBridge. Have a great day!");
           return;
         }
 
         // Execute all tool calls in parallel
-        const toolResults = await Promise.all(
+        const toolResultBlocks = await Promise.all(
           result.tool_calls.map(async (tc) => {
-            const args = JSON.parse(tc.function.arguments || "{}");
-            const res  = await executeTool(tc.function.name, args);
+            const res = await executeTool(tc.name, tc.input);
             return {
-              role:         "tool",
-              tool_call_id: tc.id,
-              content:      JSON.stringify(res)
+              type:        "tool_result",
+              tool_use_id: tc.id,
+              content:     JSON.stringify(res)
             };
           })
         );
 
-        messages.push(...toolResults);
-        conversationHistory.push(...toolResults);
-        showTyping(); // show typing again while AI processes tool results
+        // Anthropic: tool results go as a single user message with content array
+        const toolResultMsg = { role: "user", content: toolResultBlocks };
+        messages.push(toolResultMsg);
+        conversationHistory.push(toolResultMsg);
+        showTyping();
 
       } else {
         // Final text response
@@ -1064,7 +1065,7 @@ function showChatScreen(name) {
 function handleLogout() {
   localStorage.removeItem("cb_token");
   localStorage.removeItem("cb_user");
-  // Note: we intentionally keep cb_oai_key so user doesn't have to re-enter it
+  // Note: we intentionally keep cb_anthropic_key so user doesn't have to re-enter it
   conversationHistory = [];
 
   // Close chat panel if open
@@ -1123,8 +1124,8 @@ function showApiKeyModal(onSuccess) {
       return;
     }
     errEl.classList.add("hidden");
-    localStorage.setItem("cb_oai_key", key);
-    OPENAI_API_KEY = key;
+    localStorage.setItem("cb_anthropic_key", key);
+    ANTHROPIC_API_KEY = key;
     modal.classList.add("hidden");
     onSuccess();
   });
@@ -1141,7 +1142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("cb_token");
   const savedUser  = localStorage.getItem("cb_user");
   if (savedToken && savedUser) {
-    if (!OPENAI_API_KEY) {
+    if (!ANTHROPIC_API_KEY) {
       showApiKeyModal(() => showChatScreen(savedUser));
     } else {
       showChatScreen(savedUser);
@@ -1168,7 +1169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const name = await doLogin(email, password);
-      if (!OPENAI_API_KEY) {
+      if (!ANTHROPIC_API_KEY) {
         overlay.classList.add("hidden");
         showApiKeyModal(() => showChatScreen(name));
       } else {
