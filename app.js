@@ -1,14 +1,13 @@
 /* =====================================================
    CareBridge – Clinical AI Chatbot
-   Anthropic Claude + FHIR R4 API Integration
+   OpenAI GPT-5 + FHIR R4 API Integration
 ===================================================== */
 
 // ── Config ──────────────────────────────────────────
-// Anthropic API key is stored in localStorage (entered by user on first run)
+// OpenAI API key is stored in localStorage (entered by user on first run)
 // Never hardcode API keys in source code
-let ANTHROPIC_API_KEY = localStorage.getItem("cb_anthropic_key") || "";
-const CLAUDE_MODEL   = "claude-sonnet-4-6";
-const CLAUDE_FAST    = "claude-haiku-4-5-20251001";  // For tool-calling rounds (faster, higher rate limits)
+let OPENAI_API_KEY = localStorage.getItem("cb_oai_key") || "";
+const OPENAI_MODEL   = "gpt-4.1-mini";
 const FHIR_BASE      = "https://fhirassist.rsystems.com:481";
 const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 
@@ -285,94 +284,142 @@ LOINC CODES AND UNITS:
 // ── System Prompt ────────────────────────────────────
 function buildSystemPrompt() {
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-  return `## DATE
-Today: ${today}. Use this for all relative date calculations (last 6 months, past year, etc.).
+  return `## CURRENT DATE
+Today's date is ${today}. Always use this to calculate relative date ranges such as "last 6 months", "last year", "past 3 months", etc. Never guess or assume the date.
 
-## ROLE
-You are CareBridge, a clinical information assistant retrieving patient records from FHIR R4 for healthcare staff. You search patients, retrieve clinical data, provide insights, and identify patterns. Never provide treatment recommendations.
+## ROLE AND OBJECTIVE
+You are CareBridge, an intelligent clinical information assistant that retrieves and analyzes patient records from FHIR R4 for healthcare staff. Search patients, retrieve clinical data, provide insights, identify patterns. Never provide treatment recommendations.
 
-## RULES
-- Use markdown **bold** for all section titles and labels
-- Give detailed responses: full data points, exact values, dates, statuses — never just overviews
-- Professional medical terminology; one clarifying question at a time
-- Ask "Is there anything else I can assist you with?" only after brief answers or completed analyses — not after clarifications or listings
-- End chat (end_chat tool) ONLY when user explicitly says "no", "nothing else", "that's all", "bye". "ok"/"thanks"/"got it" = ask if they need more
-- Clinical assessment requests → redirect: "I can compile the patient's clinical data. The clinical assessment would need to be completed by the attending physician."
-- AI knowledge answers (not from FHIR) → append: "Note: This is AI-generated information. Re-confirmation with official sources is recommended."
-- FHIR data answers → no disclaimer
+## PERSONALITY
+Clinical, professional, efficient, analytical, evidence-based, patient with clarification.
+
+## CONTEXT
+- Access to FHIR R4 APIs: Patient, Condition, Procedure, Medication, Encounter, Observation
+- Users: doctors, nurses, healthcare staff
+- All data is confidential PHI
+
+## COMMUNICATION GUIDELINES
+- Always use markdown bold (**text**) for all section titles, headers, and category labels in responses
+- Always provide detailed, thorough responses — include full data points, exact values, dates, statuses. Never give just an overview or brief mention when full data is available
+- One clarifying question at a time
+- Use professional medical terminology
+- Never provide medical advice
+- Ask "Is there anything else I can assist you with?" only when:
+  * Answer was brief/direct (single data point)
+  * User seems to want more information
+  * Multi-step analysis completed
+- Do NOT ask after clarifications, multiple listings, or when you just asked a question
+- End chat ONLY after user explicitly says "no", "nothing else", "that's all", "thank you" or similar negative/closing phrases
+- If user says "ok", "alright", "got it", "thanks" without explicitly closing → Ask "Is there anything else I can assist you with?"
+- Only trigger end_chat when user clearly indicates they're done, not just acknowledging the answer.
+- When asked to provide clinical assessment, treatment plan, or clinical recommendations:
+  * Do NOT say "I cannot provide this" or "My role is to..."
+  * Instead redirect politely: "I can retrieve and summarize the patient's clinical data. Would you like me to compile a summary of today's visit findings (medications, labs, conditions, vitals)? The clinical assessment and plan would need to be completed by the attending physician."
+- When answering from AI knowledge (not FHIR data): append "Note: This is AI-generated information. Re-confirmation with official sources is recommended."
+- Do NOT add disclaimer when answering from webhook/FHIR responses.
 
 ## FORMATTING
-- Dates: ordinal format (15th February 1985)
-- Labs: "value unit" (7.2 g/dL)
-- Numbered lists for multiples
-- Never show raw IDs like Encounter/567834
+- Dates: YYYY-MM-DD → ordinal format (15th February 1985)
+- Lab values: "value unit" (7.2 g/dL)
+- Use numbered lists for multiples
+- Never show encounter numbers like Encounter/567834 to users
+- Never pass Patient/PatientId in Subject — pass only the numeric ID
 
-## TOOLS & PARAMETERS
-| Tool | Use For | Key Params |
+## FUNCTION REFERENCE
+| Function | When to Call | Key Parameters |
 |---|---|---|
-| search_fhir_patient | Patient lookup | GIVEN, FAMILY, EMAIL, PHONE, BIRTHDATE, PATIENT_ID |
-| search_patient_condition | Diagnoses | SUBJECT, CODE (ICD-9), ENCOUNTER |
-| search_patient_procedure | Procedures | SUBJECT, CODE (CPT), ENCOUNTER |
-| search_patient_medications | Medications | SUBJECT, CODE (drug code), PRESCRIPTIONID |
-| search_patient_encounter | Encounters | SUBJECT, DATE (gt/lt format), DATE2 |
-| search_patient_observations | Labs/vitals | SUBJECT, CODE (LOINC), value_quantity, page |
+| search_fhir_patient | Patient lookup by any identifier | EMAIL, GIVEN, FAMILY, PHONE, BIRTHDATE, PATIENT_ID |
+| search_patient_condition | Diagnoses, conditions, history | SUBJECT, CODE, ENCOUNTER |
+| search_patient_procedure | Procedures, surgeries | SUBJECT, CODE, ENCOUNTER |
+| search_patient_medications | Medications, drugs, prescriptions | SUBJECT, PRESCRIPTIONID, CODE |
+| search_patient_encounter | Admissions, discharges, insurance | SUBJECT, DATE (two date params for range) |
+| search_patient_observations | Labs, vitals, test results | SUBJECT, CODE (LOINC), value_quantity, page |
 
-**Parameter rules:** Never pass null (use empty string). Never prefix SUBJECT with "Patient/" — numeric ID only. Store patient ID for follow-ups. Never call same function twice for same data.
+## CRITICAL PARAMETER RULES
+- NEVER pass null to any parameter — leave empty string instead
+- NEVER pass "Patient/10017" in SUBJECT — pass only "10017"
+- Never call same function twice for same data
+- Store patient ID for follow-up queries in the same conversation
 
-## SEARCH PATTERNS
-
-**Patient search:** 0 results → "No patients found." | 1 → show details | Multiple → list name/DOB/email/phone, ask which
+## RESPONSE PATTERNS
+**search_fhir_patient:**
+- 0 results: "No patients found matching [criteria]. Please verify the information."
+- 1 result: Answer question, offer more details
+- Multiple: List name, DOB, email, phone — ask which patient
 
 **Conditions/Procedures/Medications:**
-- By name: look up code in knowledge base → pass as CODE (no SUBJECT needed = cross-patient search)
-- By patient: pass SUBJECT
-- Active medications: fetch all for patient, display ONLY status="active"
-- 10+ results: ask "List all or looking for something specific?"
+- Single: State name with code/status
+- Multiple: Numbered list
+- 10+: "This patient has [X] [items]. List all or looking for something specific?"
+- For Conditions by name: Look up ICD-9 code from knowledge base → pass as CODE (no SUBJECT needed for cross-patient search)
+- For Medications by drug name: Look up Drug Code from knowledge base → pass as CODE (no SUBJECT needed)
+- If user asks for "active medications": fetch all medications for the patient, then filter and display ONLY those whose status is "active" — exclude stopped, cancelled, completed, or any other status
+- For Procedures by category: Look up mincode/maxcode from knowledge base → pass as CODE
 
 **Observations:**
-- ALWAYS pass CODE (LOINC) — API errors without it
-- Always pass page=0 first; page=1,2... for more
-- After returning values: look up OBSERVATION_RANGES → show Low/Normal/High + recommendations
-- Filtered queries (e.g. "hemoglobin > 10"): use value_quantity="gt10|g/dL" (gt/lt/eq operators)
+- ALWAYS pass a CODE (LOINC) when calling search_patient_observations — never call without it as the API will error
+- Always pass page=0 on first call; pass page=1, page=2 etc. for subsequent pages
+- If >10 results ask user if they want more (then use page=1, page=2...)
+- For specific observation: look up LOINC code → pass as CODE with SUBJECT
+- For filtered queries (e.g. hemoglobin > 10): use value_quantity format: "gt10|mEq/L"
+  * gt = greater than, lt = less than, eq = equal to
+- After returning an observation value: look up parameter in observation ranges knowledge base → provide Result (Low/Normal/High) and Recommendations
+- If user asks for "recent observations", "latest observations", "her observations", "his observations", or any general observation request WITHOUT specifying a type: DO NOT ask the user — automatically fetch these key observations in a SINGLE response with all 8 tool_calls at once (not one by one): Hemoglobin (718-7), Glucose (2345-7), Sodium (2951-2), Potassium (2823-3), Creatinine (2160-0), Systolic Blood Pressure (8480-6), Diastolic Blood Pressure (8462-4), Heart Rate (8867-4). Emit all 8 search_patient_observations calls simultaneously in one response, then present all results together as a clinical summary.
+- If user asks about "deterioration patterns", "abnormal observations", "observations not normal", "which observations are concerning", or any similar request: fetch all 8 key observations simultaneously (same 8 as above), then check the interpretation/status field returned in each FHIR observation response — display ONLY those whose interpretation/status is NOT normal (e.g. High, Low, Abnormal, Critical, or any non-normal indicator). Do NOT list observations whose status is normal. For each abnormal result show: observation name, value, and the status/interpretation as returned by the API. If all statuses are normal, respond: "All key observations are within normal range — no deterioration pattern detected."
 
-**CROSS-PATIENT OBSERVATION QUERIES (IMPORTANT):**
-When user asks "list all patients with [observation] [operator] [value]" or similar cross-patient observation filters:
-- Look up the LOINC code for the observation
-- Look up the correct unit from LOINC_CODES knowledge base
-- Call search_patient_observations with CODE (LOINC), value_quantity="gt[value]|[unit]" (or lt/eq), and page=0
-- Do NOT pass SUBJECT — omitting SUBJECT searches across ALL patients
-- Present results as a numbered list with: patient name/ID, observation value, date, interpretation
-- If results have more pages, ask if user wants to see more
-
-**General observations request** (no specific type): Auto-fetch 8 key observations simultaneously: Hemoglobin (718-7), Glucose (2345-7), Sodium (2951-2), Potassium (2823-3), Creatinine (2160-0), Systolic BP (8480-6), Diastolic BP (8462-4), Heart Rate (8867-4). Present as clinical summary.
-
-**Abnormal/deterioration queries:** Fetch same 8 observations, show ONLY those with non-normal interpretation (High/Low/Abnormal/Critical). If all normal: "All key observations are within normal range."
-
-## ENCOUNTERS
-- Date range: DATE="gt2024-01-01", DATE2="lt${today}"
-- class.code: "IMP"=inpatient, "AMB"=outpatient/OPD
-- Inpatient request → show IMP only | Outpatient → AMB only | General/recent → show both in labeled sections
-- **Episodes of care:** Fetch all encounters, group by overarching clinical condition (NOT time period). Merge related conditions (e.g. all CKD stages = one episode). Each episode: numbered section with broad condition title, ALL encounters chronologically, labeled OPD/Inpatient with date, reason, doctor, location.
-
-## CARE GAPS
-Fetch encounters + medications + observations simultaneously, then:
-
-**1. Missed Follow-Up:** Find encounters with status="cancelled" or location="N/A - NO SHOW". Show date, clinic, reason, type. If none: "No missed follow-up gaps detected"
-
-**2. Clinical Deterioration:** Fetch observations relevant to patient's conditions. Flag if interpretation=Abnormal across multiple readings with worsening trend while patient has active treatment. Show every data point with date and trend. If none: "No clinical deterioration gaps detected"
-
-**3. Medication Non-Adherence:** Find medications with status="on-hold"/"stopped". Check note.text for "self-discontinued"/"stopped by patient"/"Care gap"/"did not inform care team". Show medication name, dates, gap duration, note text. If none: "No medication non-adherence gaps detected"
-
-## CLINICAL SUMMARY
-Fetch ALL simultaneously: encounters, conditions, medications, procedures, key observations (8 LOINC codes above).
-Order: **Active Conditions** → **Current Medications** → **Recent Encounters** → **Key Labs & Vitals** → **Procedures** → **Clinical Summary** (narrative synthesis).
-List every item with full details. Never skip sections.
-
-## DISCHARGE SUMMARY
-Fetch: demographics, encounter, conditions, procedures, observations, medications. Synthesize into narrative.
+**search_patient_encounter:**
+- For date range: pass first DATE as "gt2000-01-13", second DATE as "lt2024-09-13"
+- For recent period (e.g., last 6 months): calculate start date from today's date, second DATE = "lt${today}"
+- No SUBJECT needed for cross-patient date searches
+- Each encounter has a class.code field: "IMP" = inpatient / admission, "AMB" = outpatient / OPD / consultation
+- If user asks for inpatient encounters → show only encounters where class.code = "IMP"
+- If user asks for outpatient / OPD / consultation encounters → show only encounters where class.code = "AMB"
+- If user asks for both → present results in two separate labeled sections: Inpatient Encounters and Outpatient Encounters
+- If user asks for "recent encounters" or any general encounter request without specifying type → always present results in two separate labeled sections: Inpatient Encounters and Outpatient Encounters
+- If user asks for "episodes of care" → fetch all encounters using search_patient_encounter, then group encounters by overarching clinical condition (NOT by time period and NOT by exact diagnosis string). Clinically related conditions must be merged into one episode — for example all CKD stages (Stage 2, Stage 3, Stage 4, Stage 5), Hypertensive CKD, Acute Kidney Failure, Anemia of CKD should all be one episode titled "Chronic Kidney Disease Progression". Each episode must include ALL related encounters — both OPD/outpatient (class.code = "AMB") and Inpatient (class.code = "IMP") — do not exclude outpatient encounters. Present each episode as a numbered section with a broad condition name as title. Within each episode, list ALL encounters chronologically, each clearly labeled as OPD or Inpatient, with date, reason/type, doctor (if available), and location (if available). Do NOT group by time period (e.g. recent vs earlier) — always group by overarching clinical condition.
 
 ## CLINICAL ANALYSIS
-For analytical questions (e.g. "Is patient diabetic?"): check conditions + medications + labs + procedures, synthesize with evidence.
+For analytical questions (e.g., "Is patient diabetic?"):
+1. Check relevant sources: Conditions, Medications, Lab values, Procedures
+2. Synthesize findings with evidence
+3. Answer directly with supporting data
+Example: "Yes, based on: Diagnosis (Type 2 Diabetes ICD-10: E11.9), Medications (Metformin, Insulin), Lab values (Glucose 180, HbA1c 8.2%)"
+
+## CARE GAPS
+If user asks for "care gaps" or "care gap analysis" for a patient, fetch encounters, medications, and observations simultaneously, then identify and present gaps under these three sections:
+
+**1. Missed Follow-Up Gaps**
+- Fetch all encounters using search_patient_encounter
+- Look for encounters where status = "cancelled" OR where any entry in location[].display = "N/A - NO SHOW"
+- Each such encounter = a missed follow-up care gap
+- Always show full details: exact date, clinic/location, reason for visit, appointment type (OPD or Inpatient)
+- If none found, state: "No missed follow-up gaps detected"
+
+**2. Clinical Deterioration Gaps**
+- Fetch observations using search_patient_observations (fetch multiple observation types relevant to the patient's conditions)
+- For each observation type, look at values over time — if interpretation is Abnormal across multiple readings and values are trending worse, flag as deterioration
+- Also confirm patient has active medications and conditions (meaning they are being treated but still deteriorating)
+- Always show full details: observation name, every value with its exact date, and the trend direction. Never summarise — always list each data point individually
+- If none found, state: "No clinical deterioration gaps detected"
+
+**3. Medication Non-Adherence Gaps**
+- Fetch medications using search_patient_medications
+- Look for medications where status = "on-hold" or status = "stopped"
+- Check note.text for language like "self-discontinued", "stopped by patient", "Care gap", "did not inform care team"
+- If note confirms patient-initiated discontinuation, flag as a non-adherence care gap
+- Always show full details: medication name, prescribed date, date stopped, gap duration, and exact note text if available
+- If none found, state: "No medication non-adherence gaps detected"
+
+## CLINICAL SUMMARY
+If user asks for a "clinical summary", "patient summary", "full summary", "give me a summary", or any comprehensive patient overview:
+- Fetch ALL of the following simultaneously in a single response: encounters (search_patient_encounter), conditions (search_patient_conditions), medications (search_patient_medications), procedures (search_patient_procedure), and key observations (search_patient_observations for Hemoglobin 718-7, Creatinine 2160-0, Glucose 2345-7, Sodium 2951-2, Potassium 2823-3, Systolic BP 8480-6, Diastolic BP 8462-4, Heart Rate 8867-4)
+- Present each section in FULL detail before the overall summary. Never skip a section — if no data found, state "No [section] data found"
+- Section order: **Active Conditions** → **Current Medications** → **Recent Encounters** → **Key Lab Results & Vitals** → **Procedures** → **Clinical Summary**
+- Under each section, list every item with all available details (dates, values, status, codes)
+- The final **Clinical Summary** must synthesize all findings into a clinical narrative covering the patient's overall health status, key concerns, and notable trends
+
+## DISCHARGE SUMMARY
+If requested, fetch: Patient demographics, Encounter (admission/discharge), Condition (diagnoses), Procedure, Observation (labs), MedicationRequest (discharge meds). Synthesize into brief narrative format.
 
 ${LOINC_CODES}
 
@@ -384,100 +431,123 @@ ${PROCEDURE_CODES}
 
 ${OBSERVATION_RANGES}
 
-## REMINDERS
-- Never fabricate data — only use API responses
-- End chat only on explicit user closing, not acknowledgments
-- Provide evidence for all clinical observations
+## CRITICAL REMINDERS
+- Never fabricate data — only use data from API responses
+- End chat only when user explicitly indicates they are done
+- Acknowledgments like "ok", "alright", "got it" are NOT end signals
+- Always provide evidence for clinical observations
+- Distinguish between FHIR data (no disclaimer) and AI knowledge (add disclaimer)
 `;
 }
 
-// ── Anthropic Tool Definitions ──────────────────────────
+// ── OpenAI Tool Definitions ──────────────────────────
 const TOOLS = [
   {
-    name: "search_fhir_patient",
-    description: "Search for patients in the FHIR system by name, email, phone, birthdate, or patient ID.",
-    input_schema: {
-      type: "object",
-      properties: {
-        GIVEN:      { type: "string", description: "Patient first/given name" },
-        FAMILY:     { type: "string", description: "Patient last/family name" },
-        EMAIL:      { type: "string", description: "Patient email address" },
-        PHONE:      { type: "string", description: "Patient phone number" },
-        BIRTHDATE:  { type: "string", description: "Patient date of birth (YYYY-MM-DD)" },
-        PATIENT_ID: { type: "string", description: "Patient numeric ID" }
+    type: "function",
+    function: {
+      name: "search_fhir_patient",
+      description: "Search for patients in the FHIR system by name, email, phone, birthdate, or patient ID.",
+      parameters: {
+        type: "object",
+        properties: {
+          GIVEN:      { type: "string", description: "Patient first/given name" },
+          FAMILY:     { type: "string", description: "Patient last/family name" },
+          EMAIL:      { type: "string", description: "Patient email address" },
+          PHONE:      { type: "string", description: "Patient phone number" },
+          BIRTHDATE:  { type: "string", description: "Patient date of birth (YYYY-MM-DD)" },
+          PATIENT_ID: { type: "string", description: "Patient numeric ID" }
+        }
       }
     }
   },
   {
-    name: "search_patient_condition",
-    description: "Search patient conditions/diagnoses from FHIR. Can search by subject (patient ID) and/or ICD-9 code.",
-    input_schema: {
-      type: "object",
-      properties: {
-        SUBJECT:   { type: "string", description: "Patient numeric ID (do NOT include 'Patient/' prefix)" },
-        CODE:      { type: "string", description: "ICD-9 diagnosis code" },
-        ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+    type: "function",
+    function: {
+      name: "search_patient_condition",
+      description: "Search patient conditions/diagnoses from FHIR. Can search by subject (patient ID) and/or ICD-9 code.",
+      parameters: {
+        type: "object",
+        properties: {
+          SUBJECT:   { type: "string", description: "Patient numeric ID (do NOT include 'Patient/' prefix)" },
+          CODE:      { type: "string", description: "ICD-9 diagnosis code" },
+          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+        }
       }
     }
   },
   {
-    name: "search_patient_procedure",
-    description: "Search patient procedures/surgeries from FHIR. Can search by subject and/or CPT code or code range.",
-    input_schema: {
-      type: "object",
-      properties: {
-        SUBJECT:   { type: "string", description: "Patient numeric ID" },
-        CODE:      { type: "string", description: "CPT procedure code" },
-        ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+    type: "function",
+    function: {
+      name: "search_patient_procedure",
+      description: "Search patient procedures/surgeries from FHIR. Can search by subject and/or CPT code or code range.",
+      parameters: {
+        type: "object",
+        properties: {
+          SUBJECT:   { type: "string", description: "Patient numeric ID" },
+          CODE:      { type: "string", description: "CPT procedure code" },
+          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+        }
       }
     }
   },
   {
-    name: "search_patient_medications",
-    description: "Search patient medication requests/prescriptions from FHIR.",
-    input_schema: {
-      type: "object",
-      properties: {
-        SUBJECT:        { type: "string", description: "Patient numeric ID" },
-        CODE:           { type: "string", description: "Drug code (e.g. INSULIN, ACET325)" },
-        PRESCRIPTIONID: { type: "string", description: "Prescription ID number" }
+    type: "function",
+    function: {
+      name: "search_patient_medications",
+      description: "Search patient medication requests/prescriptions from FHIR.",
+      parameters: {
+        type: "object",
+        properties: {
+          SUBJECT:        { type: "string", description: "Patient numeric ID" },
+          CODE:           { type: "string", description: "Drug code (e.g. INSULIN, ACET325)" },
+          PRESCRIPTIONID: { type: "string", description: "Prescription ID number" }
+        }
       }
     }
   },
   {
-    name: "search_patient_encounter",
-    description: "Search patient encounters (admissions, discharges, insurance info) from FHIR.",
-    input_schema: {
-      type: "object",
-      properties: {
-        SUBJECT: { type: "string", description: "Patient numeric ID" },
-        DATE:    { type: "string", description: "Start date filter e.g. 'gt2000-01-13' (gt=after, lt=before)" },
-        DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" }
+    type: "function",
+    function: {
+      name: "search_patient_encounter",
+      description: "Search patient encounters (admissions, discharges, insurance info) from FHIR.",
+      parameters: {
+        type: "object",
+        properties: {
+          SUBJECT: { type: "string", description: "Patient numeric ID" },
+          DATE:    { type: "string", description: "Start date filter e.g. 'gt2000-01-13' (gt=after, lt=before)" },
+          DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" }
+        }
       }
     }
   },
   {
-    name: "search_patient_observations",
-    description: "Search patient lab results, vitals, and clinical observations from FHIR.",
-    input_schema: {
-      type: "object",
-      properties: {
-        SUBJECT:        { type: "string", description: "Patient numeric ID" },
-        CODE:           { type: "string", description: "LOINC observation code" },
-        value_quantity: { type: "string", description: "Filter by value e.g. 'gt10|mEq/L' or 'lt5|mg/dL'" },
-        page:           { type: "number", description: "Page number for pagination, starting at 0" }
+    type: "function",
+    function: {
+      name: "search_patient_observations",
+      description: "Search patient lab results, vitals, and clinical observations from FHIR.",
+      parameters: {
+        type: "object",
+        properties: {
+          SUBJECT:        { type: "string", description: "Patient numeric ID" },
+          CODE:           { type: "string", description: "LOINC observation code" },
+          value_quantity: { type: "string", description: "Filter by value e.g. 'gt10|mEq/L' or 'lt5|mg/dL'" },
+          page:           { type: "number", description: "Page number for pagination, starting at 0" }
+        }
       }
     }
   },
   {
-    name: "end_chat",
-    description: "End the conversation when the user explicitly indicates they are done (says 'no', 'nothing else', 'that's all', 'goodbye', 'bye', 'thank you' in a closing context).",
-    input_schema: {
-      type: "object",
-      properties: {
-        farewell_message: { type: "string", description: "A short professional closing message to the user." }
-      },
-      required: ["farewell_message"]
+    type: "function",
+    function: {
+      name: "end_chat",
+      description: "End the conversation when the user explicitly indicates they are done (says 'no', 'nothing else', 'that's all', 'goodbye', 'bye', 'thank you' in a closing context).",
+      parameters: {
+        type: "object",
+        properties: {
+          farewell_message: { type: "string", description: "A short professional closing message to the user." }
+        },
+        required: ["farewell_message"]
+      }
     }
   }
 ];
@@ -576,7 +646,7 @@ async function executeTool(name, args) {
   }
 }
 
-// ── Anthropic Claude Streaming Chat (with auto-retry on rate limit) ──
+// ── OpenAI Streaming Chat Completion (with auto-retry on rate limit) ──
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 // Cached system prompt — rebuilt daily so the current date stays accurate
@@ -591,24 +661,21 @@ function getSystemPrompt() {
   return _systemPromptCache;
 }
 
-// Streams the Anthropic Claude response. Calls onTextChunk(chunk) for each text delta.
-// Returns { content, tool_calls, stop_reason }.
-async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCount = 0, model = CLAUDE_MODEL) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+// Streams the OpenAI response. Calls onTextChunk(chunk) for each text delta.
+// Returns { content, tool_calls, finish_reason }.
+async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      "x-api-key":       ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "Content-Type":    "application/json",
-      "anthropic-dangerous-direct-browser-access": "true"
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type":  "application/json"
     },
     body: JSON.stringify({
-      model:     model,
-      system:    systemPrompt,
+      model: OPENAI_MODEL,
       messages,
-      tools:     TOOLS,
-      max_tokens: 4096,
-      stream:    true
+      tools: TOOLS,
+      tool_choice: "auto",
+      stream: true
     })
   });
 
@@ -624,27 +691,26 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
     const waitSec = Math.ceil(waitMs / 1000);
     const typingBubble = document.querySelector(".typing-bubble");
     if (typingBubble) {
-      typingBubble.innerHTML = `<span style="font-size:11px;color:#4a5568">Processing your request, please wait...</span>`;
+      typingBubble.innerHTML = `<span style="font-size:11px;color:#4a5568">Rate limit reached. Retrying in ${waitSec}s...</span>`;
     }
     await sleep(waitMs);
     if (typingBubble) {
       typingBubble.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
     }
-    return sendToClaude(systemPrompt, messages, onTextChunk, retryCount + 1, model);
+    return sendToOpenAI(messages, onTextChunk, retryCount + 1);
   }
 
   if (!res.ok) {
-    const errJson = await res.json().catch(() => ({}));
-    throw new Error(errJson.error?.message || `Anthropic API error (${res.status})`);
+    const errJson = await res.json();
+    throw new Error(errJson.error?.message || "OpenAI API error");
   }
 
-  // Parse Anthropic SSE stream
+  // Parse SSE stream
   const reader  = res.body.getReader();
   const decoder = new TextDecoder();
   let fullContent   = "";
-  const toolCalls   = [];   // {id, name, input_json}
-  let currentBlock  = null; // tracks current content block being streamed
-  let stopReason    = null;
+  const toolCallsMap = {};
+  let finishReason  = null;
   let buffer        = "";
 
   while (true) {
@@ -653,60 +719,47 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
 
     buffer += decoder.decode(value, { stream: true });
     const lines = buffer.split("\n");
-    buffer = lines.pop();
+    buffer = lines.pop(); // keep incomplete line
 
     for (const line of lines) {
       if (!line.startsWith("data: ")) continue;
       const data = line.slice(6).trim();
+      if (data === "[DONE]") { finishReason = finishReason || "stop"; continue; }
       if (!data) continue;
 
       try {
         const parsed = JSON.parse(data);
+        const choice = parsed.choices?.[0];
+        if (!choice) continue;
 
-        switch (parsed.type) {
-          case "content_block_start": {
-            const block = parsed.content_block;
-            if (block.type === "tool_use") {
-              currentBlock = { type: "tool_use", id: block.id, name: block.name, input_json: "" };
-            } else if (block.type === "text") {
-              currentBlock = { type: "text" };
+        if (choice.finish_reason) finishReason = choice.finish_reason;
+
+        const delta = choice.delta;
+        if (delta?.content) {
+          fullContent += delta.content;
+          if (onTextChunk) onTextChunk(delta.content);
+        }
+
+        if (delta?.tool_calls) {
+          for (const tc of delta.tool_calls) {
+            const idx = tc.index;
+            if (!toolCallsMap[idx]) {
+              toolCallsMap[idx] = { id: "", type: "function", function: { name: "", arguments: "" } };
             }
-            break;
-          }
-          case "content_block_delta": {
-            const delta = parsed.delta;
-            if (delta.type === "text_delta") {
-              fullContent += delta.text;
-              if (onTextChunk) onTextChunk(delta.text);
-            } else if (delta.type === "input_json_delta" && currentBlock?.type === "tool_use") {
-              currentBlock.input_json += delta.partial_json;
-            }
-            break;
-          }
-          case "content_block_stop": {
-            if (currentBlock?.type === "tool_use") {
-              toolCalls.push({
-                id:    currentBlock.id,
-                name:  currentBlock.name,
-                input: JSON.parse(currentBlock.input_json || "{}")
-              });
-            }
-            currentBlock = null;
-            break;
-          }
-          case "message_delta": {
-            if (parsed.delta?.stop_reason) stopReason = parsed.delta.stop_reason;
-            break;
+            if (tc.id)                 toolCallsMap[idx].id                   += tc.id;
+            if (tc.function?.name)     toolCallsMap[idx].function.name        += tc.function.name;
+            if (tc.function?.arguments) toolCallsMap[idx].function.arguments  += tc.function.arguments;
           }
         }
       } catch (e) { /* ignore malformed chunks */ }
     }
   }
 
+  const toolCallsList = Object.values(toolCallsMap);
   return {
-    content:     fullContent || null,
-    tool_calls:  toolCalls.length ? toolCalls : null,
-    stop_reason: stopReason || (toolCalls.length ? "tool_use" : "end_turn")
+    content:       fullContent || null,
+    tool_calls:    toolCallsList.length ? toolCallsList : null,
+    finish_reason: finishReason || (toolCallsList.length ? "tool_calls" : "stop")
   };
 }
 
@@ -760,90 +813,83 @@ function finalizeStreamingBubble(bubble, fullText) {
   scrollToBottom();
 }
 
-// ── Agentic Loop: handles multiple tool calls with streaming (Anthropic) ──
+// ── Agentic Loop: handles multiple tool calls with streaming ──
 async function agentLoop(userMessage) {
   conversationHistory.push({ role: "user", content: userMessage });
 
   // Keep only the last 20 messages, starting from a clean user message boundary
-  // to avoid orphaned tool_result messages that Anthropic rejects
-  const sliced = conversationHistory.slice(-12);
-  // Find first real user message (not a tool_result user message)
-  const firstUserIdx = sliced.findIndex(m =>
-    m.role === "user" && (typeof m.content === "string" || (Array.isArray(m.content) && m.content.some(b => b.type === "text")))
-  );
+  // to avoid orphaned tool role messages that OpenAI rejects
+  const sliced = conversationHistory.slice(-20);
+  const firstUserIdx = sliced.findIndex(m => m.role === "user");
   const trimmedHistory = firstUserIdx > 0 ? sliced.slice(firstUserIdx) : sliced;
 
-  // Anthropic: system prompt is separate, not in messages array
-  const systemPrompt = getSystemPrompt();
-  const messages = [...trimmedHistory];
+  const messages = [
+    { role: "system", content: getSystemPrompt() },
+    ...trimmedHistory
+  ];
 
   showTyping();
   let streamBubble = null;
 
   try {
     while (true) {
-      // Haiku only for everything — tool routing and final response
       let chunkAccum = "";
-      const result = await sendToClaude(systemPrompt, messages, (chunk) => {
+
+      const result = await sendToOpenAI(messages, (chunk) => {
+        // First chunk — hide typing indicator and create live bubble
         if (!streamBubble) {
           hideTyping();
           streamBubble = createStreamingBubble();
         }
         chunkAccum += chunk;
         updateStreamingBubble(streamBubble, chunkAccum);
-      }, 0, CLAUDE_FAST);
+      });
 
-      const isToolCall = result.stop_reason === "tool_use" ||
+      const isToolCall = result.finish_reason === "tool_calls" ||
                          (result.tool_calls && result.tool_calls.length > 0);
 
       if (isToolCall) {
-        streamBubble = null;
+        streamBubble = null; // reset for next iteration
 
-        // Build assistant message in Anthropic format (content array)
-        const assistantContent = [];
-        if (result.content) {
-          assistantContent.push({ type: "text", text: result.content });
-        }
-        for (const tc of result.tool_calls) {
-          assistantContent.push({ type: "tool_use", id: tc.id, name: tc.name, input: tc.input });
-        }
-        const assistantMsg = { role: "assistant", content: assistantContent };
+        const assistantMsg = {
+          role:       "assistant",
+          content:    result.content || null,
+          tool_calls: result.tool_calls
+        };
         messages.push(assistantMsg);
         conversationHistory.push(assistantMsg);
 
         // Handle end_chat
-        const endCall = result.tool_calls.find(tc => tc.name === "end_chat");
+        const endCall = result.tool_calls.find(tc => tc.function.name === "end_chat");
         if (endCall) {
+          const args = JSON.parse(endCall.function.arguments || "{}");
           hideTyping();
-          appendMessage("bot", endCall.input.farewell_message || "Thank you for using CareBridge. Have a great day!");
+          appendMessage("bot", args.farewell_message || "Thank you for using CareBridge. Have a great day!");
           return;
         }
 
         // Execute all tool calls in parallel
-        const toolResultBlocks = await Promise.all(
+        const toolResults = await Promise.all(
           result.tool_calls.map(async (tc) => {
-            const res = await executeTool(tc.name, tc.input);
+            const args = JSON.parse(tc.function.arguments || "{}");
+            const res  = await executeTool(tc.function.name, args);
             return {
-              type:        "tool_result",
-              tool_use_id: tc.id,
-              content:     JSON.stringify(res)
+              role:         "tool",
+              tool_call_id: tc.id,
+              content:      JSON.stringify(res)
             };
           })
         );
 
-        // Anthropic: tool results go as a single user message with content array
-        const toolResultMsg = { role: "user", content: toolResultBlocks };
-        messages.push(toolResultMsg);
-        conversationHistory.push(toolResultMsg);
-        showTyping();
-
-        // Small delay between iterations (Haiku has high rate limits, so 1s is enough)
-        await sleep(1000);
+        messages.push(...toolResults);
+        conversationHistory.push(...toolResults);
+        showTyping(); // show typing again while AI processes tool results
 
       } else {
         // Final text response
         const finalText = result.content || "";
         conversationHistory.push({ role: "assistant", content: finalText });
+
         if (streamBubble) {
           finalizeStreamingBubble(streamBubble, finalText);
         } else {
@@ -1018,7 +1064,7 @@ function showChatScreen(name) {
 function handleLogout() {
   localStorage.removeItem("cb_token");
   localStorage.removeItem("cb_user");
-  // Note: we intentionally keep cb_anthropic_key so user doesn't have to re-enter it
+  // Note: we intentionally keep cb_oai_key so user doesn't have to re-enter it
   conversationHistory = [];
 
   // Close chat panel if open
@@ -1077,8 +1123,8 @@ function showApiKeyModal(onSuccess) {
       return;
     }
     errEl.classList.add("hidden");
-    localStorage.setItem("cb_anthropic_key", key);
-    ANTHROPIC_API_KEY = key;
+    localStorage.setItem("cb_oai_key", key);
+    OPENAI_API_KEY = key;
     modal.classList.add("hidden");
     onSuccess();
   });
@@ -1095,7 +1141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("cb_token");
   const savedUser  = localStorage.getItem("cb_user");
   if (savedToken && savedUser) {
-    if (!ANTHROPIC_API_KEY) {
+    if (!OPENAI_API_KEY) {
       showApiKeyModal(() => showChatScreen(savedUser));
     } else {
       showChatScreen(savedUser);
@@ -1122,7 +1168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const name = await doLogin(email, password);
-      if (!ANTHROPIC_API_KEY) {
+      if (!OPENAI_API_KEY) {
         overlay.classList.add("hidden");
         showApiKeyModal(() => showChatScreen(name));
       } else {
