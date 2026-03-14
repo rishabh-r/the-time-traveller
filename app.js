@@ -831,26 +831,10 @@ async function agentLoop(userMessage) {
   let streamBubble = null;
 
   try {
-    let loopRound = 0;
     while (true) {
-      let chunkAccum = "";
-      // First round: Sonnet (might be a simple query with no tools)
-      // Subsequent rounds (after tool results): Haiku for tool routing, faster + higher rate limits
-      const useModel = loopRound === 0 ? CLAUDE_MODEL : CLAUDE_FAST;
-
-      // Only stream text to UI for Sonnet calls (Haiku text is discarded — Sonnet re-generates it)
-      const streamCb = useModel === CLAUDE_MODEL ? (chunk) => {
-        if (!streamBubble) {
-          hideTyping();
-          streamBubble = createStreamingBubble();
-        }
-        chunkAccum += chunk;
-        updateStreamingBubble(streamBubble, chunkAccum);
-      } : null;
-
-      const result = await sendToClaude(systemPrompt, messages, streamCb, 0, useModel);
-
-      loopRound++;
+      // ALL rounds use Haiku for tool routing (fast, high rate limits)
+      // Sonnet is only used once at the very end for the final user-facing response
+      const result = await sendToClaude(systemPrompt, messages, null, 0, CLAUDE_FAST);
 
       const isToolCall = result.stop_reason === "tool_use" ||
                          (result.tool_calls && result.tool_calls.length > 0);
@@ -900,38 +884,26 @@ async function agentLoop(userMessage) {
         await sleep(1000);
 
       } else {
-        // Final text response — if Haiku produced it after tool rounds,
-        // re-call with Sonnet for higher-quality user-facing answer
-        if (useModel === CLAUDE_FAST && loopRound > 1) {
-          chunkAccum = "";
-          streamBubble = null;
-          showTyping();
-          const sonnetResult = await sendToClaude(systemPrompt, messages, (chunk) => {
-            if (!streamBubble) {
-              hideTyping();
-              streamBubble = createStreamingBubble();
-            }
-            chunkAccum += chunk;
-            updateStreamingBubble(streamBubble, chunkAccum);
-          }, 0, CLAUDE_MODEL);
+        // Haiku decided no more tools needed — now call Sonnet ONCE for the final response
+        let chunkAccum = "";
+        streamBubble = null;
+        showTyping();
+        const sonnetResult = await sendToClaude(systemPrompt, messages, (chunk) => {
+          if (!streamBubble) {
+            hideTyping();
+            streamBubble = createStreamingBubble();
+          }
+          chunkAccum += chunk;
+          updateStreamingBubble(streamBubble, chunkAccum);
+        }, 0, CLAUDE_MODEL);
 
-          const finalText = sonnetResult.content || "";
-          conversationHistory.push({ role: "assistant", content: finalText });
-          if (streamBubble) {
-            finalizeStreamingBubble(streamBubble, finalText);
-          } else {
-            hideTyping();
-            appendMessage("bot", finalText);
-          }
+        const finalText = sonnetResult.content || "";
+        conversationHistory.push({ role: "assistant", content: finalText });
+        if (streamBubble) {
+          finalizeStreamingBubble(streamBubble, finalText);
         } else {
-          const finalText = result.content || "";
-          conversationHistory.push({ role: "assistant", content: finalText });
-          if (streamBubble) {
-            finalizeStreamingBubble(streamBubble, finalText);
-          } else {
-            hideTyping();
-            appendMessage("bot", finalText);
-          }
+          hideTyping();
+          appendMessage("bot", finalText);
         }
         break;
       }
