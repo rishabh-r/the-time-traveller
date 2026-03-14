@@ -886,8 +886,8 @@ async function agentLoop(userMessage) {
         conversationHistory.push(toolResultMsg);
         showTyping();
 
-        // Small delay between agent loop iterations to avoid bursting Anthropic rate limits
-        await sleep(2000);
+        // Delay between agent loop iterations to stay under Anthropic Sonnet rate limits
+        await sleep(5000);
 
       } else {
         // Final text response
