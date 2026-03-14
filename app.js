@@ -656,7 +656,7 @@ async function sendToClaude(systemPrompt, messages, onTextChunk = null, retryCou
       system:    systemPrompt,
       messages,
       tools:     TOOLS,
-      max_tokens: 8192,
+      max_tokens: 4096,
       stream:    true
     })
   });
@@ -815,7 +815,7 @@ async function agentLoop(userMessage) {
 
   // Keep only the last 20 messages, starting from a clean user message boundary
   // to avoid orphaned tool_result messages that Anthropic rejects
-  const sliced = conversationHistory.slice(-20);
+  const sliced = conversationHistory.slice(-12);
   // Find first real user message (not a tool_result user message)
   const firstUserIdx = sliced.findIndex(m =>
     m.role === "user" && (typeof m.content === "string" || (Array.isArray(m.content) && m.content.some(b => b.type === "text")))
