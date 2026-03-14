@@ -838,14 +838,17 @@ async function agentLoop(userMessage) {
       // Subsequent rounds (after tool results): Haiku for tool routing, faster + higher rate limits
       const useModel = loopRound === 0 ? CLAUDE_MODEL : CLAUDE_FAST;
 
-      const result = await sendToClaude(systemPrompt, messages, (chunk) => {
+      // Only stream text to UI for Sonnet calls (Haiku text is discarded — Sonnet re-generates it)
+      const streamCb = useModel === CLAUDE_MODEL ? (chunk) => {
         if (!streamBubble) {
           hideTyping();
           streamBubble = createStreamingBubble();
         }
         chunkAccum += chunk;
         updateStreamingBubble(streamBubble, chunkAccum);
-      }, 0, useModel);
+      } : null;
+
+      const result = await sendToClaude(systemPrompt, messages, streamCb, 0, useModel);
 
       loopRound++;
 
