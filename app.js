@@ -404,6 +404,18 @@ ${PROCEDURE_CODES}
 
 ${OBSERVATION_RANGES}
 
+## CHARTS
+When the user asks for data "in bar chart" or "in pie chart" format:
+1. Give your normal text response first
+2. At the very end, append EXACTLY this block (no line breaks inside it):
+   [CHART:{"type":"bar","title":"Your Title","labels":["A","B"],"values":[1,2]}]
+   Use "pie" for pie charts, "bar" for bar charts
+3. Only include real numeric data retrieved from FHIR — never fabricate numbers
+4. Max 10 data points. Labels must be short (1-3 words)
+5. If no numeric/chartable data exists for the query respond with:
+   "A chart cannot be generated for this type of information. Here is the data in text format:" then give text answer
+6. Valid chart examples: condition counts, lab value comparisons, medication counts, encounter counts by month
+
 ## REMINDERS
 - Never fabricate data — only use API responses
 - Never pass null — use empty string
@@ -782,7 +794,9 @@ function updateStreamingBubble(bubble, text) {
 }
 
 function finalizeStreamingBubble(bubble, fullText) {
-  bubble.innerHTML = simpleMarkdown(fullText || "");
+  const { cleanText, chartData } = extractChartData(fullText || "");
+  bubble.innerHTML = simpleMarkdown(cleanText);
+  if (chartData) renderChartInBubble(bubble, chartData);
   scrollToBottom();
 }
 
@@ -952,8 +966,11 @@ function appendMessage(role, text) {
 
   const bubble = document.createElement("div");
   bubble.className = "msg-bubble";
+  let _chartData = null;
   if (isBot) {
-    bubble.innerHTML = simpleMarkdown(text);
+    const { cleanText, chartData } = extractChartData(text);
+    bubble.innerHTML = simpleMarkdown(cleanText);
+    _chartData = chartData;
   } else {
     bubble.textContent = text;
   }
@@ -980,6 +997,7 @@ function appendMessage(role, text) {
 
   container.appendChild(row);
   scrollToBottom();
+  if (_chartData) renderChartInBubble(bubble, _chartData);
   return bubble;
 }
 
@@ -1252,4 +1270,47 @@ function appendActionElements(bubble, userMessage) {
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(btn);
   }
+}
+
+// ── Chart utilities ──────────────────────────────────────────
+function extractChartData(text) {
+  const match = text.match(/\[CHART:(\{[\s\S]*?\})\]/);
+  if (!match) return { cleanText: text, chartData: null };
+  try {
+    return { cleanText: text.replace(match[0], "").trim(), chartData: JSON.parse(match[1]) };
+  } catch(e) {
+    return { cleanText: text.replace(match[0], "").trim(), chartData: null };
+  }
+}
+
+function renderChartInBubble(bubble, chartData) {
+  const colors = ["#0d9488","#3b82f6","#8b5cf6","#f59e0b","#ef4444","#10b981","#f97316","#06b6d4","#ec4899","#84cc16"];
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "margin-top:14px;max-width:440px;background:#f8fafc;border-radius:10px;padding:12px;";
+  const canvas = document.createElement("canvas");
+  wrapper.appendChild(canvas);
+  bubble.appendChild(wrapper);
+  const isBar = chartData.type !== "pie";
+  new Chart(canvas, {
+    type: isBar ? "bar" : "pie",
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        label: chartData.title || "Data",
+        data: chartData.values,
+        backgroundColor: isBar ? "#0d9488" : colors.slice(0, chartData.labels.length),
+        borderColor: isBar ? "#0f766e" : colors.slice(0, chartData.labels.length),
+        borderWidth: 1,
+        borderRadius: isBar ? 6 : 0
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: !isBar },
+        title: { display: !!chartData.title, text: chartData.title || "", font: { size: 13 } }
+      },
+      scales: isBar ? { y: { beginAtZero: true, grid: { color: "#f0f0f0" } }, x: { grid: { display: false } } } : {}
+    }
+  });
 }
