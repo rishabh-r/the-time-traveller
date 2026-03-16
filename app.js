@@ -863,12 +863,15 @@ async function agentLoop(userMessage) {
         const finalText = result.content || "";
         conversationHistory.push({ role: "assistant", content: finalText });
 
+        let finalBubble;
         if (streamBubble) {
           finalizeStreamingBubble(streamBubble, finalText);
+          finalBubble = streamBubble;
         } else {
           hideTyping();
-          appendMessage("bot", finalText);
+          finalBubble = appendMessage("bot", finalText);
         }
+        appendActionElements(finalBubble, userMessage);
         break;
       }
     }
@@ -977,6 +980,7 @@ function appendMessage(role, text) {
 
   container.appendChild(row);
   scrollToBottom();
+  return bubble;
 }
 
 function scrollToBottom() {
@@ -1222,3 +1226,30 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
+// ── Action Elements: append link/button after bot response ──
+function appendActionElements(bubble, userMessage) {
+  const msg = userMessage.toLowerCase();
+
+  if (msg.includes("clinical summary")) {
+    const link = document.createElement("a");
+    link.href = "https://www.google.com/";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "🔗 Open Full Clinical Record";
+    link.style.cssText = "display:inline-block;margin-top:10px;color:#0d9488;font-weight:600;font-size:0.85rem;text-decoration:underline;";
+    bubble.appendChild(document.createElement("br"));
+    bubble.appendChild(link);
+  }
+
+  if (msg.includes("care gap")) {
+    const btn = document.createElement("button");
+    btn.textContent = "⚡ View Care Gap Actions";
+    btn.style.cssText = "display:inline-block;margin-top:10px;padding:8px 16px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;";
+    btn.onmouseenter = () => btn.style.background = "#0f766e";
+    btn.onmouseleave = () => btn.style.background = "#0d9488";
+    btn.onclick = () => window.open("https://www.google.com/", "_blank");
+    bubble.appendChild(document.createElement("br"));
+    bubble.appendChild(btn);
+  }
+}
