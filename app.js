@@ -1270,16 +1270,6 @@ function appendActionElements(bubble, userMessage) {
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(btn);
   }
-  if (msg.includes("download") || msg.includes("export") || msg.includes("save as pdf")) {
-    const dlBtn = document.createElement("button");
-    dlBtn.innerHTML = "⬇ Download as PDF";
-    dlBtn.style.cssText = "display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:8px 18px;background:#1e293b;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;";
-    dlBtn.onmouseenter = () => dlBtn.style.background = "#0f172a";
-    dlBtn.onmouseleave = () => dlBtn.style.background = "#1e293b";
-    dlBtn.onclick = () => downloadBubbleAsPDF(bubble);
-    bubble.appendChild(document.createElement("br"));
-    bubble.appendChild(dlBtn);
-  }
 }
 
 // ── Chart utilities ──────────────────────────────────────────
@@ -1323,32 +1313,4 @@ function renderChartInBubble(bubble, chartData) {
       scales: isBar ? { y: { beginAtZero: true, grid: { color: "#f0f0f0" } }, x: { grid: { display: false } } } : {}
     }
   });
-}
-
-// ── PDF Download ─────────────────────────────────────────────
-function downloadBubbleAsPDF(bubble) {
-  const clone = bubble.cloneNode(true);
-
-  // Remove buttons/links added by appendActionElements so they don't appear in PDF
-  clone.querySelectorAll("button, a").forEach(el => el.remove());
-
-  const wrapper = document.createElement("div");
-  wrapper.style.cssText = "font-family:Arial,sans-serif;padding:24px;max-width:700px;color:#1e293b;line-height:1.6;";
-
-  const header = document.createElement("div");
-  header.style.cssText = "border-bottom:2px solid #0d9488;padding-bottom:10px;margin-bottom:18px;";
-  header.innerHTML =
-    '<h2 style="margin:0;color:#0d9488;font-size:18px;">CareBridge \u2014 Clinical Report</h2>' +
-    '<p style="margin:4px 0 0;font-size:12px;color:#64748b;">Generated: ' + new Date().toLocaleString() + '</p>';
-
-  wrapper.appendChild(header);
-  wrapper.appendChild(clone);
-
-  html2pdf().set({
-    margin:      10,
-    filename:    "carebridge-report.pdf",
-    image:       { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" }
-  }).from(wrapper).save();
 }
