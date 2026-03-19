@@ -1251,10 +1251,10 @@ function appendActionElements(bubble, userMessage) {
 
   if (msg.includes("clinical summary")) {
     const link = document.createElement("a");
-    link.href = "https://www.google.com/";
+    link.href = "https://rsi-ai-care.figma.site/";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "🔗 Open Full Clinical Record";
+    link.textContent = "Launch CareCord AI";
     link.style.cssText = "display:inline-block;margin-top:10px;color:#0d9488;font-weight:600;font-size:0.85rem;text-decoration:underline;";
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(link);
@@ -1262,11 +1262,11 @@ function appendActionElements(bubble, userMessage) {
 
   if (msg.includes("care gap")) {
     const btn = document.createElement("button");
-    btn.textContent = "⚡ View Care Gap Actions";
-    btn.style.cssText = "display:inline-block;margin-top:10px;padding:8px 16px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;";
-    btn.onmouseenter = () => btn.style.background = "#0f766e";
-    btn.onmouseleave = () => btn.style.background = "#0d9488";
-    btn.onclick = () => window.open("https://www.google.com/", "_blank");
+    btn.textContent = "Launch CareCord AI";
+    btn.style.cssText = "display:inline-block;margin-top:10px;padding:6px 14px;background:transparent;color:#0d9488;border:1px solid #0d9488;border-radius:4px;font-size:0.85rem;cursor:pointer;";
+    btn.onmouseenter = () => { btn.style.background = "#0d9488"; btn.style.color = "#fff"; };
+    btn.onmouseleave = () => { btn.style.background = "transparent"; btn.style.color = "#0d9488"; };
+    btn.onclick = () => window.open("https://rsi-ai-care.figma.site/", "_blank");
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(btn);
   }
