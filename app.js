@@ -1249,17 +1249,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function appendActionElements(bubble, userMessage) {
   const msg = userMessage.toLowerCase();
 
-  if (msg.includes("clinical summary")) {
-    const link = document.createElement("a");
-    link.href = "https://rsi-ai-care.figma.site/";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = "Launch CareCord AI";
-    link.style.cssText = "display:inline-block;margin-top:10px;color:#0d9488;font-weight:600;font-size:0.85rem;text-decoration:underline;";
-    bubble.appendChild(document.createElement("br"));
-    bubble.appendChild(link);
-  }
-
   if (msg.includes("care gap")) {
     const btn = document.createElement("button");
     btn.textContent = "Launch CareCord AI";
