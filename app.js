@@ -16,6 +16,7 @@ let conversationHistory = [];
 let userName = "";
 let userInitial = "U";
 let isBotResponding = false;
+let lastPatientId = "";
 
 // ── Knowledge Bases (embedded) ───────────────────────
 const CONDITION_CODES = `
@@ -570,6 +571,8 @@ function buildUrl(path, params) {
 
 // Map function names to actual FHIR calls
 async function executeTool(name, args) {
+  if (args.SUBJECT) lastPatientId = args.SUBJECT;
+  if (args.PATIENT_ID) lastPatientId = args.PATIENT_ID;
   try {
     switch (name) {
       case "search_fhir_patient": {
@@ -1255,7 +1258,7 @@ function appendActionElements(bubble, userMessage) {
     btn.style.cssText = "display:inline-block;margin-top:10px;padding:6px 14px;background:transparent;color:#0d9488;border:1px solid #0d9488;border-radius:4px;font-size:0.85rem;cursor:pointer;";
     btn.onmouseenter = () => { btn.style.background = "#0d9488"; btn.style.color = "#fff"; };
     btn.onmouseleave = () => { btn.style.background = "transparent"; btn.style.color = "#0d9488"; };
-    btn.onclick = () => window.open("https://rsi-ai-care.figma.site/", "_blank");
+    btn.onclick = () => window.open("dashboard.html?patient=" + encodeURIComponent(lastPatientId), "_blank");
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(btn);
   }
