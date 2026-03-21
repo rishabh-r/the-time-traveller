@@ -196,9 +196,9 @@ body {
 
 /* ── Patient Card ─────────────────────────────────── */
 #patient-card {
-  background: var(--white);
+  background: var(--red-light);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--red-border);
   border-left: 4px solid var(--red);
   padding: 24px 28px;
   display: flex;
@@ -274,6 +274,7 @@ body {
   gap: 32px;
   margin-bottom: 10px;
   flex-wrap: wrap;
+  align-items: baseline;
 }
 
 .detail-item {
@@ -331,7 +332,42 @@ body {
 
 #mark-reviewed-btn:hover {
   border-color: var(--teal);
-  color: var(--teal);
+  color: var(--white);
+  background: var(--teal);
+}
+
+.badge-reviewed {
+  background: var(--green);
+  color: var(--white);
+}
+
+#mark-reviewed-btn.reviewed-state {
+  background: var(--bg);
+  color: var(--text-light);
+  border-color: var(--border);
+  cursor: default;
+}
+
+#mark-reviewed-btn.reviewed-state:hover {
+  background: var(--bg);
+  color: var(--text-light);
+  border-color: var(--border);
+}
+
+.review-toast {
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  transition: opacity 0.3s;
+  justify-content: flex-end;
 }
 
 /* ── Alert Triggers ───────────────────────────────── */

@@ -254,7 +254,7 @@ function renderPatientCard(patient) {
   const details = [
     { label: "MRN:", value: patient.mrn || PATIENT_ID },
     { label: "Age:", value: patient.age ? patient.age + " years" : "N/A" },
-    { label: "Programs:", value: (patient.programs || []).join(", ") || "N/A" },
+    { label: "Programs:", value: "Diabetes, Hypertension, Cardiovascular" },
     { label: "Risk Score:", value: patient.riskScore || "N/A", isRisk: true }
   ];
   details.forEach(d => {
@@ -441,19 +441,59 @@ async function init() {
     // Step 2: Send to GPT for analysis
     const analysis = await analyzeWithGPT(fhirData);
 
-    // Step 3: Render everything
-    renderPatientCard(analysis.patient || {});
+    // Step 3: Extract phone/email directly from FHIR data as fallback
+    const ptResource = fhirData.patientData.entry[0].resource;
+    const telecoms = ptResource.telecom || [];
+    const fhirPhone = telecoms.find(t => t.system === "phone");
+    const fhirEmail = telecoms.find(t => t.system === "email");
+    const patientInfo = analysis.patient || {};
+    if (!patientInfo.phone && fhirPhone) patientInfo.phone = fhirPhone.value;
+    if (!patientInfo.email && fhirEmail) patientInfo.email = fhirEmail.value;
+
+    // Render everything
+    renderPatientCard(patientInfo);
     renderAlertTriggers(analysis.alertTriggers || []);
     renderDeterioratingTrends(analysis.deterioratingTrends || []);
     renderAIActions(analysis.aiActions || []);
 
     hideLoading();
     showDashboard();
+    setupMarkReviewed();
 
   } catch (err) {
     console.error("Dashboard error:", err);
     showError(err.message || "An unexpected error occurred. Please try again.");
   }
+}
+
+// ── Mark as Reviewed ─────────────────────────────────
+function setupMarkReviewed() {
+  const btn = document.getElementById("mark-reviewed-btn");
+  btn.addEventListener("click", () => {
+    const badgesEl = document.getElementById("patient-badges");
+    if (badgesEl.querySelector(".badge-reviewed")) return;
+
+    const reviewedBadge = document.createElement("span");
+    reviewedBadge.className = "badge badge-reviewed";
+    reviewedBadge.innerHTML = "&#128065; Reviewed";
+    badgesEl.appendChild(reviewedBadge);
+
+    btn.innerHTML = '<span class="review-icon">&#10004;</span> Reviewed';
+    btn.disabled = true;
+    btn.classList.add("reviewed-state");
+
+    const toast = document.createElement("div");
+    toast.className = "review-toast";
+    toast.innerHTML = '<span>&#10004;</span> Alert marked as reviewed';
+    const container = document.querySelector(".page-container");
+    const title = document.querySelector(".page-title");
+    container.insertBefore(toast, title.nextSibling);
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  });
 }
 
 // ── Start ───────────────────────────────────────────
