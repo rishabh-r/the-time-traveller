@@ -241,14 +241,29 @@ function renderPatientCard(patient) {
   // Badges
   const badgesEl = document.getElementById("patient-badges");
   badgesEl.innerHTML = "";
+  const riskColors = {
+    high: { text: "#b91c1c", border: "#fde8e8" },
+    critical: { text: "#b91c1c", border: "#fde8e8" },
+    medium: { text: "#b45309", border: "#fef3cd" },
+    low: { text: "#15803d", border: "#d5f5e3" }
+  };
+  const riskKey = (patient.riskLevel || "high").toLowerCase();
+  const colors = riskColors[riskKey] || riskColors.high;
+
   (patient.tags || []).forEach(tag => {
     const span = document.createElement("span");
     const tagLower = tag.toLowerCase();
-    let badgeClass = "badge-care-gap";
-    if (tagLower.includes("high risk") || tagLower.includes("critical")) badgeClass = "badge-high-risk";
-    else if (tagLower.includes("medium risk")) badgeClass = "badge-medium-risk";
-    else if (tagLower.includes("low risk")) badgeClass = "badge-low-risk";
-    span.className = "badge " + badgeClass;
+    if (tagLower.includes("high risk") || tagLower.includes("critical")) {
+      span.className = "badge badge-high-risk";
+    } else if (tagLower.includes("medium risk")) {
+      span.className = "badge badge-medium-risk";
+    } else if (tagLower.includes("low risk")) {
+      span.className = "badge badge-low-risk";
+    } else {
+      span.className = "badge badge-care-gap";
+      span.style.color = colors.text;
+      span.style.borderColor = colors.text;
+    }
     span.textContent = tag;
     badgesEl.appendChild(span);
   });

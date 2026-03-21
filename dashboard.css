@@ -274,9 +274,8 @@ body {
 }
 
 .badge-care-gap {
-  background: var(--white);
-  color: var(--teal);
-  border: 1px solid var(--teal);
+  background: transparent;
+  border: 1px solid currentColor;
 }
 
 .patient-details-row {
