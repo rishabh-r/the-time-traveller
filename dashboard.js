@@ -499,30 +499,45 @@ async function init() {
 // ── Mark as Reviewed ─────────────────────────────────
 function setupMarkReviewed() {
   const btn = document.getElementById("mark-reviewed-btn");
+  let isReviewed = false;
+
   btn.addEventListener("click", () => {
     const badgesEl = document.getElementById("patient-badges");
-    if (badgesEl.querySelector(".badge-reviewed")) return;
 
-    const reviewedBadge = document.createElement("span");
-    reviewedBadge.className = "badge badge-reviewed";
-    reviewedBadge.innerHTML = "&#128065; Reviewed";
-    badgesEl.appendChild(reviewedBadge);
+    if (!isReviewed) {
+      // Mark as reviewed
+      const reviewedBadge = document.createElement("span");
+      reviewedBadge.className = "badge badge-reviewed";
+      reviewedBadge.innerHTML = "&#128065; Reviewed";
+      badgesEl.appendChild(reviewedBadge);
 
-    btn.innerHTML = '<span class="review-icon">&#10004;</span> Reviewed';
-    btn.disabled = true;
-    btn.classList.add("reviewed-state");
+      btn.innerHTML = '<span class="review-icon">&#10004;</span> Reviewed';
+      btn.classList.add("reviewed-state");
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "review-toast-wrapper";
-    wrapper.innerHTML = '<div class="review-toast"><span>&#10004;</span> Alert marked as reviewed</div>';
-    const container = document.querySelector(".page-container");
-    const title = document.querySelector(".page-title");
-    container.insertBefore(wrapper, title.nextSibling);
+      // Show toast
+      const wrapper = document.createElement("div");
+      wrapper.className = "review-toast-wrapper";
+      wrapper.innerHTML = '<div class="review-toast"><span>&#10004;</span> Alert marked as reviewed</div>';
+      const container = document.querySelector(".page-container");
+      const title = document.querySelector(".page-title");
+      container.insertBefore(wrapper, title.nextSibling);
 
-    setTimeout(() => {
-      wrapper.style.opacity = "0";
-      setTimeout(() => wrapper.remove(), 300);
-    }, 3000);
+      setTimeout(() => {
+        wrapper.style.opacity = "0";
+        setTimeout(() => wrapper.remove(), 300);
+      }, 3000);
+
+      isReviewed = true;
+    } else {
+      // Revert to original
+      const reviewedBadge = badgesEl.querySelector(".badge-reviewed");
+      if (reviewedBadge) reviewedBadge.remove();
+
+      btn.innerHTML = '<span class="review-icon">&#128065;</span> Mark as Reviewed';
+      btn.classList.remove("reviewed-state");
+
+      isReviewed = false;
+    }
   });
 }
 
