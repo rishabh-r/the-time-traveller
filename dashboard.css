@@ -196,10 +196,10 @@ body {
 
 /* ── Patient Card ─────────────────────────────────── */
 #patient-card {
-  background: var(--red-light);
+  background: var(--white);
   border-radius: var(--radius);
-  border: 1px solid var(--red-border);
-  border-left: 4px solid var(--red);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
   padding: 24px 28px;
   display: flex;
   align-items: flex-start;
@@ -260,6 +260,16 @@ body {
 
 .badge-high-risk {
   background: var(--red);
+  color: var(--white);
+}
+
+.badge-medium-risk {
+  background: var(--yellow);
+  color: var(--white);
+}
+
+.badge-low-risk {
+  background: var(--green);
   color: var(--white);
 }
 

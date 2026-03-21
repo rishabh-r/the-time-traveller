@@ -243,7 +243,12 @@ function renderPatientCard(patient) {
   badgesEl.innerHTML = "";
   (patient.tags || []).forEach(tag => {
     const span = document.createElement("span");
-    span.className = "badge " + (tag.toLowerCase().includes("risk") ? "badge-high-risk" : "badge-care-gap");
+    const tagLower = tag.toLowerCase();
+    let badgeClass = "badge-care-gap";
+    if (tagLower.includes("high risk") || tagLower.includes("critical")) badgeClass = "badge-high-risk";
+    else if (tagLower.includes("medium risk")) badgeClass = "badge-medium-risk";
+    else if (tagLower.includes("low risk")) badgeClass = "badge-low-risk";
+    span.className = "badge " + badgeClass;
     span.textContent = tag;
     badgesEl.appendChild(span);
   });
@@ -281,13 +286,23 @@ function renderPatientCard(patient) {
     contactRow.appendChild(emailItem);
   }
 
-  // Risk border
+  // Risk-based card styling (border + background)
+  const card = document.getElementById("patient-card");
   if (patient.riskLevel === "High" || patient.riskLevel === "Critical") {
-    document.getElementById("patient-card").style.borderLeftColor = "var(--red)";
+    card.style.borderLeftColor = "var(--red)";
+    card.style.background = "var(--red-light)";
+    card.style.borderColor = "var(--red-border)";
+    card.style.borderLeftColor = "var(--red)";
   } else if (patient.riskLevel === "Medium") {
-    document.getElementById("patient-card").style.borderLeftColor = "var(--yellow)";
+    card.style.borderLeftColor = "var(--yellow)";
+    card.style.background = "var(--yellow-light)";
+    card.style.borderColor = "var(--yellow-border)";
+    card.style.borderLeftColor = "var(--yellow)";
   } else {
-    document.getElementById("patient-card").style.borderLeftColor = "var(--green)";
+    card.style.borderLeftColor = "var(--green)";
+    card.style.background = "var(--green-light)";
+    card.style.borderColor = "var(--green-border)";
+    card.style.borderLeftColor = "var(--green)";
   }
 }
 
