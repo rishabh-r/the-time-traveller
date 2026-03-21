@@ -584,9 +584,8 @@ function showTaskToast(message, type) {
   const icon = isWarn ? "&#9888;" : "&#10003;";
   const cls = isWarn ? "review-toast warn-toast" : "review-toast task-toast";
   wrapper.innerHTML = '<div class="' + cls + '"><span>' + icon + '</span> ' + escHtml(message) + '</div>';
-  const container = document.querySelector(".page-container");
-  const title = document.querySelector(".page-title");
-  container.insertBefore(wrapper, title.nextSibling);
+  const actionsHeader = document.querySelector(".actions-header");
+  actionsHeader.insertAdjacentElement("afterend", wrapper);
   setTimeout(() => {
     wrapper.style.opacity = "0";
     setTimeout(() => wrapper.remove(), 300);

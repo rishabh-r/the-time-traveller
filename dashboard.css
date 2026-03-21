@@ -366,7 +366,7 @@ body {
 .review-toast-wrapper {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .review-toast {
