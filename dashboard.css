@@ -198,7 +198,7 @@ body {
 #patient-card {
   background: var(--white);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-left: 4px solid var(--border);
   padding: 24px 28px;
   display: flex;
@@ -383,11 +383,23 @@ body {
   transition: opacity 0.3s;
 }
 
+.task-toast {
+  background: var(--blue-light);
+  border-color: var(--blue-border);
+  color: var(--blue);
+}
+
+.warn-toast {
+  background: var(--yellow-light);
+  border-color: var(--yellow-border);
+  color: #b45309;
+}
+
 /* ── Alert Triggers ───────────────────────────────── */
 #alert-section {
   background: var(--white);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   padding: 24px 28px;
   box-shadow: var(--shadow);
   margin-bottom: 24px;
@@ -432,7 +444,7 @@ body {
 .alert-card {
   border-radius: 10px;
   padding: 20px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   position: relative;
 }
 
@@ -504,7 +516,7 @@ body {
 /* ── Deteriorating Trends (inside alert section) ──── */
 #trends-section {
   background: #f8f9fb;
-  border: 1px solid #e2e6ec;
+  border: 2px solid #d6dbe4;
   border-radius: 10px;
   padding: 20px 24px;
   margin-top: 20px;
@@ -593,7 +605,7 @@ body {
 #ai-actions-tab {
   background: var(--white);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   padding: 24px 28px;
   box-shadow: var(--shadow);
 }
@@ -631,7 +643,7 @@ body {
 
 /* Action Cards */
 .action-card {
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 10px;
   padding: 20px 24px;
   margin-bottom: 16px;
@@ -861,7 +873,10 @@ body {
   transition: border-color 0.2s;
 }
 
-.coordinator-notes:focus { border-color: var(--blue); }
+.coordinator-notes:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
 
 .assignment-box {
   margin-top: 16px;
@@ -893,6 +908,11 @@ body {
   gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid var(--border);
+}
+
+.cancel-x {
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .modal-cancel {

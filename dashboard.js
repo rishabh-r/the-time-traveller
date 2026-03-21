@@ -515,11 +515,16 @@ function setupApproveModal(actions) {
   const closeX = document.getElementById("modal-close-x");
   const cancelBtn = document.getElementById("modal-cancel-btn");
   const confirmBtn = document.getElementById("modal-confirm-btn");
+  let pendingCount = 0;
 
   function openModal() {
     const checked = document.querySelectorAll(".action-checkbox:checked");
-    if (checked.length === 0) return;
+    if (checked.length === 0) {
+      showTaskToast("Please select at least one action first", "warn");
+      return;
+    }
 
+    pendingCount = checked.length;
     const selected = Array.from(checked).map(cb => actions[parseInt(cb.dataset.idx)]);
     document.getElementById("modal-action-count").textContent = selected.length;
 
@@ -557,6 +562,7 @@ function setupApproveModal(actions) {
   overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
 
   confirmBtn.addEventListener("click", () => {
+    const count = pendingCount;
     closeModal();
     // Uncheck all and reset card styles
     document.querySelectorAll(".action-checkbox").forEach(cb => {
@@ -564,7 +570,27 @@ function setupApproveModal(actions) {
       cb.closest(".action-card").classList.remove("selected");
     });
     updateSelectedCount();
+    // Show task created toast
+    const msg = count === 1 ? "Task created successfully" : count + " tasks created successfully";
+    showTaskToast(msg);
   });
+}
+
+// ── Task Created Toast ───────────────────────────────
+function showTaskToast(message, type) {
+  const isWarn = type === "warn";
+  const wrapper = document.createElement("div");
+  wrapper.className = "review-toast-wrapper";
+  const icon = isWarn ? "&#9888;" : "&#10003;";
+  const cls = isWarn ? "review-toast warn-toast" : "review-toast task-toast";
+  wrapper.innerHTML = '<div class="' + cls + '"><span>' + icon + '</span> ' + escHtml(message) + '</div>';
+  const container = document.querySelector(".page-container");
+  const title = document.querySelector(".page-title");
+  container.insertBefore(wrapper, title.nextSibling);
+  setTimeout(() => {
+    wrapper.style.opacity = "0";
+    setTimeout(() => wrapper.remove(), 300);
+  }, 1000);
 }
 
 // ── Mark as Reviewed ─────────────────────────────────
