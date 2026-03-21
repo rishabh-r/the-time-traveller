@@ -492,7 +492,9 @@ async function init() {
     renderPatientCard(patientInfo);
     renderAlertTriggers(analysis.alertTriggers || []);
     renderDeterioratingTrends(analysis.deterioratingTrends || []);
-    renderAIActions(analysis.aiActions || []);
+    const aiActions = analysis.aiActions || [];
+    renderAIActions(aiActions);
+    setupApproveModal(aiActions);
 
     hideLoading();
     showDashboard();
@@ -502,6 +504,67 @@ async function init() {
     console.error("Dashboard error:", err);
     showError(err.message || "An unexpected error occurred. Please try again.");
   }
+}
+
+// ── Approve Modal ────────────────────────────────────
+let approvedActions = [];
+
+function setupApproveModal(actions) {
+  const approveBtn = document.getElementById("approve-btn");
+  const overlay = document.getElementById("approve-modal-overlay");
+  const closeX = document.getElementById("modal-close-x");
+  const cancelBtn = document.getElementById("modal-cancel-btn");
+  const confirmBtn = document.getElementById("modal-confirm-btn");
+
+  function openModal() {
+    const checked = document.querySelectorAll(".action-checkbox:checked");
+    if (checked.length === 0) return;
+
+    const selected = Array.from(checked).map(cb => actions[parseInt(cb.dataset.idx)]);
+    document.getElementById("modal-action-count").textContent = selected.length;
+
+    const list = document.getElementById("modal-actions-list");
+    list.innerHTML = "";
+    selected.forEach(action => {
+      const priorityClass = action.priority.toLowerCase().includes("high") ? "high" :
+                            action.priority.toLowerCase().includes("medium") ? "medium" : "low";
+      const priorityShort = action.priority.replace(" Priority", "").replace(" priority", "");
+      const item = document.createElement("div");
+      item.className = "modal-action-item";
+      item.innerHTML =
+        '<span class="modal-action-check">&#10003;</span>' +
+        '<div class="modal-action-content">' +
+          '<div class="modal-action-title-row">' +
+            '<span class="modal-action-name">' + escHtml(action.title) + '</span>' +
+            '<span class="modal-priority-pill ' + priorityClass + '">' + escHtml(priorityShort) + '</span>' +
+          '</div>' +
+          '<p class="modal-action-desc">' + escHtml(action.description) + '</p>' +
+        '</div>';
+      list.appendChild(item);
+    });
+
+    document.getElementById("coordinator-notes").value = "";
+    overlay.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    overlay.classList.add("hidden");
+  }
+
+  approveBtn.addEventListener("click", openModal);
+  closeX.addEventListener("click", closeModal);
+  cancelBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
+
+  confirmBtn.addEventListener("click", () => {
+    closeModal();
+    // Uncheck all and reset card styles
+    document.querySelectorAll(".action-checkbox").forEach(cb => {
+      cb.checked = false;
+      cb.closest(".action-card").classList.remove("selected");
+    });
+    updateSelectedCount();
+  });
 }
 
 // ── Mark as Reviewed ─────────────────────────────────

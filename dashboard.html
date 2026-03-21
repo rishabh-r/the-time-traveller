@@ -121,6 +121,33 @@
     </div>
   </div>
 
+  <!-- Approve Modal -->
+  <div id="approve-modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Approve &amp; Create Tasks</h2>
+          <p class="modal-subtitle">Review selected actions and add coordinator notes before creating tasks</p>
+        </div>
+        <button class="modal-close" id="modal-close-x">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-section-label">Selected Actions (<span id="modal-action-count">0</span>):</p>
+        <div id="modal-actions-list" class="modal-actions-list"></div>
+        <p class="modal-section-label" style="margin-top:20px;">Coordinator Notes (Optional)</p>
+        <textarea id="coordinator-notes" class="coordinator-notes" placeholder="Add any additional context or special instructions for task execution..."></textarea>
+        <div class="assignment-box">
+          <p class="assignment-title">Assignment:</p>
+          <p class="assignment-text">Tasks will be created and assigned to <strong>your task queue</strong> for immediate action</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel" id="modal-cancel-btn">&times; Cancel</button>
+        <button class="modal-confirm" id="modal-confirm-btn">&#10003; Confirm &amp; Create Tasks</button>
+      </div>
+    </div>
+  </div>
+
   <script src="dashboard.js"></script>
 </body>
 </html>
