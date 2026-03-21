@@ -512,16 +512,16 @@ function setupMarkReviewed() {
     btn.disabled = true;
     btn.classList.add("reviewed-state");
 
-    const toast = document.createElement("div");
-    toast.className = "review-toast";
-    toast.innerHTML = '<span>&#10004;</span> Alert marked as reviewed';
+    const wrapper = document.createElement("div");
+    wrapper.className = "review-toast-wrapper";
+    wrapper.innerHTML = '<div class="review-toast"><span>&#10004;</span> Alert marked as reviewed</div>';
     const container = document.querySelector(".page-container");
     const title = document.querySelector(".page-title");
-    container.insertBefore(toast, title.nextSibling);
+    container.insertBefore(wrapper, title.nextSibling);
 
     setTimeout(() => {
-      toast.style.opacity = "0";
-      setTimeout(() => toast.remove(), 300);
+      wrapper.style.opacity = "0";
+      setTimeout(() => wrapper.remove(), 300);
     }, 3000);
   });
 }

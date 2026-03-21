@@ -363,20 +363,24 @@ body {
   border-color: var(--border);
 }
 
+.review-toast-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
 .review-toast {
   background: var(--green-light);
   border: 1px solid var(--green-border);
   color: var(--green);
-  padding: 12px 20px;
+  padding: 10px 20px;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
   transition: opacity 0.3s;
-  justify-content: flex-end;
 }
 
 /* ── Alert Triggers ───────────────────────────────── */
