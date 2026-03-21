@@ -589,7 +589,7 @@ function showTaskToast(message, type) {
   setTimeout(() => {
     wrapper.style.opacity = "0";
     setTimeout(() => wrapper.remove(), 300);
-  }, 1000);
+  }, 2000);
 }
 
 // ── Mark as Reviewed ─────────────────────────────────
