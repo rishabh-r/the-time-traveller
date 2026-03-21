@@ -525,7 +525,7 @@ function setupMarkReviewed() {
       setTimeout(() => {
         wrapper.style.opacity = "0";
         setTimeout(() => wrapper.remove(), 300);
-      }, 3000);
+      }, 1000);
 
       isReviewed = true;
     } else {
