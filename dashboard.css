@@ -497,7 +497,7 @@ body {
 }
 
 .priority-badge.low {
-  background: var(--text-light);
+  background: #64748b;
   color: var(--white);
 }
 
@@ -613,7 +613,7 @@ body {
 
 .approve-btn {
   padding: 10px 20px;
-  background: var(--teal);
+  background: var(--blue);
   color: var(--white);
   border: none;
   border-radius: 8px;
@@ -623,11 +623,11 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   white-space: nowrap;
 }
 
-.approve-btn:hover { background: var(--teal-dark); }
+.approve-btn:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
 
 /* Action Cards */
 .action-card {
