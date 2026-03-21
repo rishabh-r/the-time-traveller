@@ -635,11 +635,18 @@ body {
   border-radius: 10px;
   padding: 20px 24px;
   margin-bottom: 16px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
 }
 
 .action-card:hover {
-  border-color: var(--teal);
+  border-color: #b0bec5;
+}
+
+.action-card.selected {
+  border-color: var(--blue);
+  border-width: 2px;
+  background: var(--blue-light);
 }
 
 .action-card-top {

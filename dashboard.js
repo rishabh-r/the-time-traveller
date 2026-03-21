@@ -406,6 +406,14 @@ function renderAIActions(actions) {
         '</div>' +
       '</div>';
 
+    // Toggle selected state on card click
+    card.addEventListener("click", (e) => {
+      const cb = card.querySelector(".action-checkbox");
+      if (e.target !== cb) cb.checked = !cb.checked;
+      card.classList.toggle("selected", cb.checked);
+      updateSelectedCount();
+    });
+
     container.appendChild(card);
   });
 
