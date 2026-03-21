@@ -548,34 +548,40 @@ body {
 /* ── Tabs Bar ─────────────────────────────────────── */
 .tabs-bar {
   display: flex;
-  border-bottom: 2px solid var(--border);
+  background: #f1f3f6;
+  border-radius: 10px;
+  padding: 4px;
   margin-bottom: 24px;
+  gap: 4px;
 }
 
 .tab {
-  padding: 12px 24px;
-  background: none;
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
   border: none;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-mid);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .tab.active {
+  background: var(--white);
   color: var(--text-dark);
-  border-bottom-color: var(--teal);
   font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .tab.disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
