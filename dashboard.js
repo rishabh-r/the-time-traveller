@@ -13,7 +13,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const PATIENT_ID = urlParams.get("patient");
 
 // ── Auth guard ──────────────────────────────────────
-if (!AUTH_TOKEN || !OAI_KEY) {
+if (!AUTH_TOKEN) {
   window.location.href = "index.html";
 }
 if (!PATIENT_ID) {
