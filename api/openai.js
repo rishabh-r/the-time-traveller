@@ -1,4 +1,4 @@
-// Vercel serverless proxy — keeps OpenAI API key server-side
+// Vercel serverless proxy — keeps Azure OpenAI key server-side
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).end();
@@ -8,18 +8,23 @@ module.exports = async function handler(req, res) {
   const body = req.body;
   const isStream = body.stream === true;
 
+  // Remove model from body — Azure uses deployment name in the URL
+  const { model, ...azureBody } = body;
+
+  const AZURE_ENDPOINT = "https://care-coordination-project.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview";
+
   let oaiRes;
   try {
-    oaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    oaiRes = await fetch(AZURE_ENDPOINT, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "api-key": process.env.AZURE_OPENAI_KEY,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(azureBody)
     });
   } catch (err) {
-    res.status(502).json({ error: "Failed to reach OpenAI" });
+    res.status(502).json({ error: "Failed to reach Azure OpenAI" });
     return;
   }
 
