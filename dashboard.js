@@ -7,6 +7,7 @@
 const FHIR_BASE    = "https://fhirassist.rsystems.com:481";
 const OPENAI_MODEL = "gpt-4.1-mini";
 const AUTH_TOKEN    = localStorage.getItem("cb_token");
+const OAI_KEY       = localStorage.getItem("cb_oai_key");
 
 // ── Read patient ID from URL ────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
@@ -183,9 +184,10 @@ async function analyzeWithGPT(fhirData) {
     }), null, 0)
   ].join("\n");
 
-  const res = await fetch("/api/openai", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
+      "Authorization": "Bearer " + OAI_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({

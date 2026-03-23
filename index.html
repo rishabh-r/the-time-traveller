@@ -67,6 +67,38 @@
     </div>
   </div>
 
+  <!-- ───────────── API KEY SETUP MODAL ───────────── -->
+  <div id="apikey-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <img src="chatbot_image/chatbot.png" alt="" class="modal-logo" />
+        <div>
+          <h3>Anthropic API Key Required</h3>
+          <p>Enter your key to power CareBridge's AI engine. It is stored only in your browser.</p>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label for="apikey-input">Anthropic API Key</label>
+        <div class="pw-wrap">
+          <input type="password" id="apikey-input" placeholder="sk-ant-..." autocomplete="off" />
+          <button type="button" class="pw-toggle" id="toggle-apikey">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="apikey-error" class="error-banner hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>Please enter a valid Anthropic API key (starts with sk-).</span>
+      </div>
+      <button id="apikey-save-btn" class="launch-btn" style="margin-top:16px;">Save &amp; Continue</button>
+      <p class="login-footer" style="margin-top:12px;">Your key is stored locally in this browser only and never sent anywhere except Anthropic.</p>
+    </div>
+  </div>
 
   <!-- ───────────────── HOME SCREEN ───────────────── -->
   <div id="home-screen" class="hidden">

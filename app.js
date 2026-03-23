@@ -4,6 +4,9 @@
 ===================================================== */
 
 // ── Config ──────────────────────────────────────────
+// OpenAI API key is stored in localStorage (entered by user on first run)
+// Never hardcode API keys in source code
+let OPENAI_API_KEY = localStorage.getItem("cb_oai_key") || "";
 const OPENAI_MODEL   = "gpt-4.1-mini";
 const FHIR_BASE      = "https://fhirassist.rsystems.com:481";
 const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
@@ -664,10 +667,11 @@ function getSystemPrompt() {
 // Streams the OpenAI response. Calls onTextChunk(chunk) for each text delta.
 // Returns { content, tool_calls, finish_reason }.
 async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
-  const res = await fetch("/api/openai", {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type":  "application/json"
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
@@ -1111,6 +1115,37 @@ async function handleSend() {
   input.focus();
 }
 
+// ── API Key Modal ─────────────────────────────────────
+function showApiKeyModal(onSuccess) {
+  const modal   = document.getElementById("apikey-modal");
+  const input   = document.getElementById("apikey-input");
+  const saveBtn = document.getElementById("apikey-save-btn");
+  const errEl   = document.getElementById("apikey-error");
+
+  modal.classList.remove("hidden");
+  input.focus();
+
+  document.getElementById("toggle-apikey").addEventListener("click", () => {
+    input.type = input.type === "password" ? "text" : "password";
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const key = input.value.trim();
+    if (!key.startsWith("sk-")) {
+      errEl.classList.remove("hidden");
+      return;
+    }
+    errEl.classList.add("hidden");
+    localStorage.setItem("cb_oai_key", key);
+    OPENAI_API_KEY = key;
+    modal.classList.add("hidden");
+    onSuccess();
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") saveBtn.click();
+  });
+}
 
 // ── Event Listeners ──────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -1119,7 +1154,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedToken = localStorage.getItem("cb_token");
   const savedUser  = localStorage.getItem("cb_user");
   if (savedToken && savedUser) {
-    showChatScreen(savedUser);
+    if (!OPENAI_API_KEY) {
+      showApiKeyModal(() => showChatScreen(savedUser));
+    } else {
+      showChatScreen(savedUser);
+    }
   }
 
   // Login form
@@ -1142,8 +1181,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const name = await doLogin(email, password);
-      overlay.classList.add("hidden");
-      showChatScreen(name);
+      if (!OPENAI_API_KEY) {
+        overlay.classList.add("hidden");
+        showApiKeyModal(() => showChatScreen(name));
+      } else {
+        overlay.classList.add("hidden");
+        showChatScreen(name);
+      }
     } catch (err) {
       overlay.classList.add("hidden");
       errText.textContent = err.message;
