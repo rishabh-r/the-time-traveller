@@ -1228,7 +1228,7 @@ function appendActionElements(bubble, userMessage) {
     btn.style.cssText = "display:inline-block;margin-top:10px;padding:6px 14px;background:transparent;color:#0d9488;border:1px solid #0d9488;border-radius:4px;font-size:0.85rem;cursor:pointer;";
     btn.onmouseenter = () => { btn.style.background = "#0d9488"; btn.style.color = "#fff"; };
     btn.onmouseleave = () => { btn.style.background = "transparent"; btn.style.color = "#0d9488"; };
-    btn.onclick = () => window.open("https://rsi-ai-care.figma.site/", "_blank");
+    btn.onclick = () => window.open("https://hull-act-74080093.figma.site/care-manager/P-001", "_blank");
     bubble.appendChild(document.createElement("br"));
     bubble.appendChild(btn);
   }
