@@ -392,7 +392,7 @@ If user asks for "care gaps" or "care gap analysis" for a patient, fetch encount
 - If none found, state: "No missed follow-up gaps detected"
 
 **2. Clinical Deterioration Gaps**
-- Fetch observations using search_patient_observations (fetch multiple observation types relevant to the patient's conditions)
+- Always fetch ALL of these 8 observation types using search_patient_observations: Hemoglobin (718-7), Glucose (2345-7), Sodium (2951-2), Potassium (2823-3), Creatinine (2160-0), Systolic BP (8480-6), Diastolic BP (8462-4), Heart Rate (8867-4). Do NOT skip any of these — fetch all 8 regardless of the patient's conditions
 - For each observation type, look at values over time — if interpretation is Abnormal across multiple readings and values are trending worse, flag as deterioration
 - Also confirm patient has active medications and conditions (meaning they are being treated but still deteriorating)
 - Always show full details: observation name, every value with its exact date, and the trend direction. Never summarise — always list each data point individually
