@@ -377,11 +377,11 @@ Clinical, professional, efficient, analytical, evidence-based, patient with clar
 - If user asks for "episodes of care" → fetch all encounters using search_patient_encounter, then group encounters by overarching clinical condition (NOT by time period and NOT by exact diagnosis string). Clinically related conditions must be merged into one episode — for example all CKD stages (Stage 2, Stage 3, Stage 4, Stage 5), Hypertensive CKD, Acute Kidney Failure, Anemia of CKD should all be one episode titled "Chronic Kidney Disease Progression". Each episode must include ALL related encounters — both OPD/outpatient (class.code = "AMB") and Inpatient (class.code = "IMP") — do not exclude outpatient encounters. Present each episode as a numbered section with a broad condition name as title. Within each episode, list ALL encounters chronologically, each clearly labeled as OPD or Inpatient, with date, reason/type, doctor (if available), and location (if available). Do NOT group by time period (e.g. recent vs earlier) — always group by overarching clinical condition.
 
 ## CHARTS
-If the user asks for a bar chart, pie chart, or any visual chart of data (e.g. "show as a bar chart", "give me a pie chart of conditions", "chart the glucose values"):
+If the user asks for a chart or graph of data (e.g. "show as a chart", "plot the glucose values", "graph the creatinine trend"):
 - Include the text answer as normal, then append a chart block in this exact format on its own line:
-[CHART:{"type":"bar","title":"Chart Title","labels":["Label1","Label2"],"values":[10,20]}]
-- Use "bar" for bar charts and "pie" for pie charts
-- labels = category names, values = numeric values
+[CHART:{"type":"line","title":"Chart Title","labels":["Label1","Label2"],"values":[10,20]}]
+- Always use "line" as the type regardless of what the user asks
+- labels = category names (e.g. dates), values = numeric values
 - Only include this block when the user explicitly asks for a chart
 
 ## CLINICAL ANALYSIS
@@ -1290,33 +1290,37 @@ function extractChartData(text) {
 }
 
 function renderChartInBubble(bubble, chartData) {
-  const colors = ["#0d9488","#3b82f6","#8b5cf6","#f59e0b","#ef4444","#10b981","#f97316","#06b6d4","#ec4899","#84cc16"];
   const wrapper = document.createElement("div");
   wrapper.style.cssText = "margin-top:14px;max-width:440px;background:#f8fafc;border-radius:10px;padding:12px;";
   const canvas = document.createElement("canvas");
   wrapper.appendChild(canvas);
   bubble.appendChild(wrapper);
-  const isBar = chartData.type !== "pie";
   new Chart(canvas, {
-    type: isBar ? "bar" : "pie",
+    type: "line",
     data: {
       labels: chartData.labels,
       datasets: [{
         label: chartData.title || "Data",
         data: chartData.values,
-        backgroundColor: isBar ? "#0d9488" : colors.slice(0, chartData.labels.length),
-        borderColor: isBar ? "#0f766e" : colors.slice(0, chartData.labels.length),
-        borderWidth: 1,
-        borderRadius: isBar ? 6 : 0
+        backgroundColor: "rgba(13,148,136,0.1)",
+        borderColor: "#0d9488",
+        borderWidth: 2,
+        pointBackgroundColor: "#0f766e",
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: { display: !isBar },
+        legend: { display: false },
         title: { display: !!chartData.title, text: chartData.title || "", font: { size: 13 } }
       },
-      scales: isBar ? { y: { beginAtZero: true, grid: { color: "#f0f0f0" } }, x: { grid: { display: false } } } : {}
+      scales: {
+        y: { beginAtZero: false, grid: { color: "#f0f0f0" } },
+        x: { grid: { display: false } }
+      }
     }
   });
 }
