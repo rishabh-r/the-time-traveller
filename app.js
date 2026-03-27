@@ -1129,7 +1129,7 @@ async function handleSend() {
 
     const queries = {
       "conditions":  `Show active conditions for patient ${patientRef}`,
-      "lab":         `What is the HbA1c count for patient ${patientRef}`,
+      "lab":         `Latest observations for the patient ${patientRef}`,
       "medications": `List medications for patient ${patientRef}`,
       "encounters":  `Show encounters for patient ${patientRef}`,
       "caregaps":    `Show care gaps for patient ${patientRef}`
