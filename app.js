@@ -12,6 +12,7 @@ const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 
 // ── State ────────────────────────────────────────────
 let conversationHistory = [];
+let currentPatient = null; // tracks last searched patient { name, id }
 let userName = "";
 let userInitial = "U";
 let isBotResponding = false;
@@ -1292,13 +1293,17 @@ function renderChartInBubble(bubble, chartData) {
     const item = e.target.closest(".predefined-dropdown-item");
     if (!item) return;
     const label = item.dataset.label;
-    const reply = item.dataset.reply;
+    const genericReply = item.dataset.reply;
     dropdown.classList.add("hidden");
     bulbBtn.classList.remove("active");
-    // Show as user message then bot reply
     appendMessage("user", label);
     const welcomeCard = document.querySelector(".welcome-card");
     if (welcomeCard) welcomeCard.remove();
+    // If a patient was already searched, ask if they want the same patient
+    let reply = genericReply;
+    if (currentPatient && label !== "Search patient") {
+      reply = `Sure! Would you like this for ${currentPatient.name}, or a different patient?`;
+    }
     setTimeout(() => appendMessage("bot", reply), 300);
   });
 
