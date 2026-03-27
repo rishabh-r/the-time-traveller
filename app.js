@@ -13,6 +13,7 @@ const LOGIN_URL      = `${FHIR_BASE}/auth/login`;
 // ── State ────────────────────────────────────────────
 let conversationHistory = [];
 let currentPatient = null; // tracks last searched patient { name, id }
+let pendingChipAction = null; // tracks which chip was clicked: "conditions"|"lab"|"medications"|"encounters"
 let userName = "";
 let userInitial = "U";
 let isBotResponding = false;
@@ -1107,7 +1108,36 @@ async function handleSend() {
   input.placeholder = "CareBridge is responding...";
 
   appendMessage("user", text);
-  await agentLoop(text);
+
+  // Build internal query if a chip action is pending
+  let internalQuery = text;
+  if (pendingChipAction) {
+    const action = pendingChipAction;
+    pendingChipAction = null;
+
+    // Determine patient reference: use ID if known, else use typed name
+    let patientRef = text;
+    if (currentPatient) {
+      const typedLower = text.toLowerCase();
+      const nameLower  = currentPatient.name.toLowerCase();
+      const firstName  = nameLower.split(" ")[0];
+      // If user confirmed same patient (typed their name or short confirm)
+      if (typedLower.includes(firstName) || typedLower === "yes" || typedLower === "yeah" || typedLower === "same") {
+        patientRef = currentPatient.id || currentPatient.name;
+      }
+    }
+
+    const queries = {
+      "conditions":  `Show active conditions for patient ${patientRef}`,
+      "lab":         `What is the HbA1c count for patient ${patientRef}`,
+      "medications": `List medications for patient ${patientRef}`,
+      "encounters":  `Show encounters for patient ${patientRef}`,
+      "caregaps":    `Show care gaps for patient ${patientRef}`
+    };
+    internalQuery = queries[action] || text;
+  }
+
+  await agentLoop(internalQuery);
 
   isBotResponding = false;
   sendBtn.disabled = false;
@@ -1309,6 +1339,15 @@ function renderChartInBubble(bubble, chartData) {
     appendMessage("user", label);
     const welcomeCard = document.querySelector(".welcome-card");
     if (welcomeCard) welcomeCard.remove();
+    // Store pending action
+    const actionMap = {
+      "View conditions": "conditions",
+      "Lab results":     "lab",
+      "Medications":     "medications",
+      "Encounters":      "encounters",
+      "Care gaps":       "caregaps"
+    };
+    if (actionMap[label]) pendingChipAction = actionMap[label];
     // If a patient was already searched, ask if they want the same patient
     let reply = genericReply;
     if (currentPatient && label !== "Search patient") {
