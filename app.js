@@ -1350,11 +1350,11 @@ function renderChartInBubble(bubble, chartData) {
     if (welcomeCard) welcomeCard.remove();
     // Store pending action so the next user reply gets the internal query
     const actionMap = {
-      "View conditions": "conditions",
-      "Lab results":     "lab",
-      "Medications":     "medications",
-      "Encounters":      "encounters",
-      "Care gaps":       "caregaps"
+      "View Active Conditions":          "conditions",
+      "View Latest Observations":        "lab",
+      "View Active Medications":         "medications",
+      "View Last 12 months encounters":  "encounters",
+      "View Care Gaps":                  "caregaps"
     };
     if (actionMap[label]) pendingChipAction = actionMap[label];
     // Send the chip label directly to the agent — no hardcoded reply
