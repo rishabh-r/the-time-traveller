@@ -595,7 +595,17 @@ async function executeTool(name, args) {
         if (args.PHONE)      params.phone     = args.PHONE;
         if (args.BIRTHDATE)  params.birthdate = args.BIRTHDATE;
         if (args.PATIENT_ID) params._id       = args.PATIENT_ID;
-        return await callFhirApi(buildUrl("/baseR4/Patient", params));
+        const patientResult = await callFhirApi(buildUrl("/baseR4/Patient", params));
+        try {
+          const entries = patientResult?.entry || [];
+          const resource = entries[0]?.resource || null;
+          const id = resource?.id || args.PATIENT_ID || "";
+          const rGiven  = resource?.name?.[0]?.given?.join(" ") || args.GIVEN || "";
+          const rFamily = resource?.name?.[0]?.family || args.FAMILY || "";
+          const fullName = [rGiven, rFamily].filter(Boolean).join(" ");
+          if (fullName) currentPatient = { name: fullName, id };
+        } catch(e) {}
+        return patientResult;
       }
       case "search_patient_condition": {
         const params = {};
