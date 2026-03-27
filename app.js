@@ -814,7 +814,8 @@ function createStreamingBubble() {
 }
 
 function updateStreamingBubble(bubble, text) {
-  bubble.querySelector("span").textContent = text;
+  const { cleanText } = extractChartData(text || "");
+  bubble.innerHTML = simpleMarkdown(cleanText);
   scrollToBottom();
 }
 
