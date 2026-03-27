@@ -1291,13 +1291,15 @@ function renderChartInBubble(bubble, chartData) {
   dropdown.addEventListener("click", (e) => {
     const item = e.target.closest(".predefined-dropdown-item");
     if (!item) return;
-    const q = item.dataset.q;
-    input.value = q;
-    input.dispatchEvent(new Event("input"));
-    sendBtn.disabled = false;
+    const label = item.dataset.label;
+    const reply = item.dataset.reply;
     dropdown.classList.add("hidden");
     bulbBtn.classList.remove("active");
-    input.focus();
+    // Show as user message then bot reply
+    appendMessage("user", label);
+    const welcomeCard = document.querySelector(".welcome-card");
+    if (welcomeCard) welcomeCard.remove();
+    setTimeout(() => appendMessage("bot", reply), 300);
   });
 
   document.addEventListener("click", (e) => {
