@@ -1332,6 +1332,7 @@ function renderChartInBubble(bubble, chartData) {
   dropdown.addEventListener("click", (e) => {
     const item = e.target.closest(".predefined-dropdown-item");
     if (!item) return;
+    if (isBotResponding) return; // ignore clicks while bot is responding
     const label = item.dataset.label;
     const genericReply = item.dataset.reply;
     dropdown.classList.add("hidden");
