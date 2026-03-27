@@ -1329,18 +1329,17 @@ function renderChartInBubble(bubble, chartData) {
     bulbBtn.classList.toggle("active", isHidden);
   });
 
-  dropdown.addEventListener("click", (e) => {
+  dropdown.addEventListener("click", async (e) => {
     const item = e.target.closest(".predefined-dropdown-item");
     if (!item) return;
     if (isBotResponding) return; // ignore clicks while bot is responding
     const label = item.dataset.label;
-    const genericReply = item.dataset.reply;
     dropdown.classList.add("hidden");
     bulbBtn.classList.remove("active");
     appendMessage("user", label);
     const welcomeCard = document.querySelector(".welcome-card");
     if (welcomeCard) welcomeCard.remove();
-    // Store pending action
+    // Store pending action so the next user reply gets the internal query
     const actionMap = {
       "View conditions": "conditions",
       "Lab results":     "lab",
@@ -1349,12 +1348,17 @@ function renderChartInBubble(bubble, chartData) {
       "Care gaps":       "caregaps"
     };
     if (actionMap[label]) pendingChipAction = actionMap[label];
-    // If a patient was already searched, ask if they want the same patient
-    let reply = genericReply;
-    if (currentPatient && label !== "Search patient") {
-      reply = `Sure! Would you like this for ${currentPatient.name}, or a different patient?`;
-    }
-    setTimeout(() => appendMessage("bot", reply), 300);
+    // Send the chip label directly to the agent — no hardcoded reply
+    const input   = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+    isBotResponding = true;
+    sendBtn.disabled = true;
+    input.placeholder = "CareBridge is responding...";
+    await agentLoop(label);
+    isBotResponding = false;
+    sendBtn.disabled = false;
+    input.placeholder = "Ask about patient records, labs...";
+    input.focus();
   });
 
   document.addEventListener("click", (e) => {
