@@ -179,7 +179,22 @@
             rows="1"
             maxlength="2000"
           ></textarea>
-          <button id="send-btn" class="send-btn" disabled title="Send">
+          <div id="predefined-dropdown" class="predefined-dropdown hidden">
+          <div class="predefined-dropdown-item" data-q="Search for patient Charlotte Bennett">Search patient</div>
+          <div class="predefined-dropdown-item" data-q="Show active conditions for patient 44230">View conditions</div>
+          <div class="predefined-dropdown-item" data-q="What are the lab results for patient 44230?">Lab results</div>
+          <div class="predefined-dropdown-item" data-q="List medications for patient 44230">Medications</div>
+          <div class="predefined-dropdown-item" data-q="Show encounters for patient 44230">Encounters</div>
+          <div class="predefined-dropdown-item" data-q="Show care gaps for patient 44230">Care gaps</div>
+        </div>
+        <button id="bulb-btn" class="bulb-btn" title="Predefined questions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="9" y1="18" x2="15" y2="18"/>
+            <line x1="10" y1="22" x2="14" y2="22"/>
+            <path d="M12 2a7 7 0 0 1 7 7c0 3-1.8 5.4-4.5 6.5V17H9.5v-1.5C6.8 14.4 5 12 5 9a7 7 0 0 1 7-7z"/>
+          </svg>
+        </button>
+    <button id="send-btn" class="send-btn" disabled title="Send">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
             </svg>

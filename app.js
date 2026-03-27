@@ -1276,3 +1276,40 @@ function renderChartInBubble(bubble, chartData) {
     }
   });
 }
+
+
+// ── Predefined Questions Bulb ────────────────────────────
+(function() {
+  const bulbBtn  = document.getElementById("bulb-btn");
+  const dropdown = document.getElementById("predefined-dropdown");
+  const input    = document.getElementById("user-input");
+  const sendBtn  = document.getElementById("send-btn");
+
+  if (!bulbBtn || !dropdown) return;
+
+  bulbBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isHidden = dropdown.classList.contains("hidden");
+    dropdown.classList.toggle("hidden", !isHidden);
+    bulbBtn.classList.toggle("active", isHidden);
+  });
+
+  dropdown.addEventListener("click", (e) => {
+    const item = e.target.closest(".predefined-dropdown-item");
+    if (!item) return;
+    const q = item.dataset.q;
+    input.value = q;
+    input.dispatchEvent(new Event("input"));
+    sendBtn.disabled = false;
+    dropdown.classList.add("hidden");
+    bulbBtn.classList.remove("active");
+    input.focus();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target) && e.target !== bulbBtn) {
+      dropdown.classList.add("hidden");
+      bulbBtn.classList.remove("active");
+    }
+  });
+})();
