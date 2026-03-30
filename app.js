@@ -600,7 +600,7 @@ ${OBSERVATION_RANGES}
 
 ## CURRENT DATE
 Today's date is ${today}. Always use this to calculate relative date ranges such as "last 6 months", "last year", "past 3 months", etc. Never guess or assume the date.
-``;
+`;
 }
 
 // ── OpenAI Tool Definitions ──────────────────────────
