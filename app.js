@@ -411,6 +411,7 @@ When the user asks for active medications of a patient (e.g. "Give active medica
 
 Step 1: Call search_patient_medications with SUBJECT and page=0
 Step 2: Filter and display ONLY medications whose status is active — exclude stopped, on-hold, cancelled, completed, or any other status
+Step 2.1: Step 3: For each medication that passed the status = active filter, additionally check the note.text field — if it contains words like "DISCONTINUED", "stopped", "discontinued", or "self-discontinued", exclude that medication from the active list entirely, even if its status field reads "active"
 Step 3: After displaying, ask: "There may be more active medications. Would you like to see more?"
 Step 4: If user says yes — call again with SUBJECT and page=1, apply the same active status filter, display results, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
