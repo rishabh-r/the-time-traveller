@@ -352,7 +352,7 @@ When the user asks for active conditions of a patient, load and display conditio
 Step 1: Call search_patient_condition with SUBJECT and page=0
 Step 2: Filter and display ONLY conditions whose clinicalStatus is active — exclude inactive, resolved, or any other status
 Step 3: After displaying, ask: "There may be more conditions. Would you like to see more?"
-Step 4: If user says yes — call again with SUBJECT and page=1, display the next 10 active conditions, then ask again
+Step 4: If user says yes — call again with SUBJECT and page=1, display all active conditions returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Single Condition Result
@@ -374,7 +374,7 @@ When the user asks about procedures performed on a patient (e.g. "What procedure
 Step 1: Call search_patient_procedure with SUBJECT and page=0
 Step 2: Display all procedures returned, each with procedure name, code, status, and date
 Step 3: After displaying, ask: "There may be more procedures. Would you like to see more?"
-Step 4: If user says yes — call again with SUBJECT and page=1, display the next 10, then ask again
+Step 4: If user says yes — call again with SUBJECT and page=1, display all results returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Active Procedures for a Specific Patient
@@ -403,7 +403,7 @@ When the user asks for medications of a patient (e.g. "Give me medications for p
 Step 1: Call search_patient_medications with SUBJECT and page=0
 Step 2: Display all medications returned, each with medication name, code, status, and prescribed date
 Step 3: After displaying, ask: "There may be more medications. Would you like to see more?"
-Step 4: If user says yes — call again with SUBJECT and page=1, display the next 10, then ask again
+Step 4: If user says yes — call again with SUBJECT and page=1, display all results returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Active Medications for a Specific Patient
@@ -430,7 +430,7 @@ When the user asks for encounters between specific dates (e.g. "Show encounters 
 Step 1: Pass first DATE parameter as gt{start_date} (e.g. gt2000-01-13) and second DATE parameter as lt{end_date} (e.g. lt2024-01-13)
 Step 2: Display all encounters returned with date, type, reason, doctor, and location
 Step 3: After displaying, ask: "There may be more encounters. Would you like to see more?"
-Step 4: If user says yes — call again with page=1, display the next 10, then ask again
+Step 4: If user says yes — call again with page=1, display all results returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Recent Period Search
@@ -440,7 +440,7 @@ Step 1: Calculate the start date by subtracting the requested period from today'
 Step 2: Pass first DATE parameter as gt{start_date} (e.g. gt2025-09-30) and second DATE parameter as lt{today} (e.g. lt2026-03-30)
 Step 3: Display all encounters returned with date, type, reason, doctor, and location
 Step 4: After displaying, ask: "There may be more encounters. Would you like to see more?"
-Step 5: If user says yes — call again with page=1, display the next 10, then ask again
+Step 5: If user says yes — call again with page=1, display all results returned on that page, then ask again
 Step 6: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 
