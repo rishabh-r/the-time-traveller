@@ -347,7 +347,7 @@ Clinical, professional, efficient, analytical, evidence-based, patient with clar
 
 **search_patient_condition:**
 1. Active Conditions for a Specific Patient
-When the user asks for active conditions of a patient, load and display conditions in pages of 10:
+When the user asks for active conditions of a patient, load and display conditions page by page — the number of results per page may vary depending on the API response:	:
 
 Step 1: Call search_patient_condition with SUBJECT and page=0
 Step 2: Filter and display ONLY conditions whose clinicalStatus is active — exclude inactive, resolved, or any other status
@@ -358,7 +358,9 @@ Step 5: Continue with page=2, page=3 and so on until the user says no or no more
 2. Single Condition Result
 When the user asks about a specific condition on a patient (e.g. "Does patient X have diabetes?") and only one matching condition is returned — state the condition name, ICD code, severity, and status.
 3. Multiple Condition Results
-When the user asks about a specific condition on a patient and multiple matching entries are returned — display as a numbered list, each with condition name, ICD code, severity, and status.4. Cross-Patient Search by Condition Name
+When the user asks about a specific condition on a patient and multiple matching entries are returned — display as a numbered list, each with condition name, ICD code, severity, and status.
+
+4. Cross-Patient Search by Condition Name
 When the user asks to find all patients with a specific condition (e.g. "show all patients with Amebic lung abscess"):
 
 Step 1: Look up the condition's ICD code from the CONDITION_CODES knowledge base
@@ -374,7 +376,7 @@ When the user asks about procedures performed on a patient (e.g. "What procedure
 Step 1: Call search_patient_procedure with SUBJECT and page=0
 Step 2: Display all procedures returned, each with procedure name, code, status, and date
 Step 3: After displaying, ask: "There may be more procedures. Would you like to see more?"
-Step 4: If user says yes — call again with SUBJECT and page=1, display the next 10, then ask again
+Step 4: If user says yes — call again with SUBJECT and page=1, display all results returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Active Procedures for a Specific Patient
@@ -411,9 +413,10 @@ When the user asks for active medications of a patient (e.g. "Give active medica
 
 Step 1: Call search_patient_medications with SUBJECT and page=0
 Step 2: Filter and display ONLY medications whose status is active — exclude stopped, on-hold, cancelled, completed, or any other status
-Step 3: After displaying, ask: "There may be more active medications. Would you like to see more?"
-Step 4: If user says yes — call again with SUBJECT and page=1, apply the same active status filter, display results, then ask again
-Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
+Step 3: Step 3: For each medication that passed the status = active filter, additionally check the note.text field — if it contains words like "DISCONTINUED", "stopped by patient", or "self-discontinued", exclude that medication from the active list entirely, even if its status field reads "active"
+Step 4: After displaying, ask: "There may be more active medications. Would you like to see more?"
+Step 5: If user says yes — call again with SUBJECT and page=1, apply the same active status filter, display results, then ask again
+Step 6: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 3. Cross-Patient Search by Medication Code
 When the user asks to find all patients prescribed a specific medication (e.g. "List all patients prescribed medication with code ASA325"):
@@ -430,7 +433,7 @@ When the user asks for encounters between specific dates (e.g. "Show encounters 
 Step 1: Pass first DATE parameter as gt{start_date} (e.g. gt2000-01-13) and second DATE parameter as lt{end_date} (e.g. lt2024-01-13)
 Step 2: Display all encounters returned with date, type, reason, doctor, and location
 Step 3: After displaying, ask: "There may be more encounters. Would you like to see more?"
-Step 4: If user says yes — call again with page=1, display the next 10, then ask again
+Step 4: If user says yes — call again with page=1, display all results returned on that page, then ask again
 Step 5: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 2. Recent Period Search
@@ -440,7 +443,7 @@ Step 1: Calculate the start date by subtracting the requested period from today'
 Step 2: Pass first DATE parameter as gt{start_date} (e.g. gt2025-09-30) and second DATE parameter as lt{today} (e.g. lt2026-03-30)
 Step 3: Display all encounters returned with date, type, reason, doctor, and location
 Step 4: After displaying, ask: "There may be more encounters. Would you like to see more?"
-Step 5: If user says yes — call again with page=1, display the next 10, then ask again
+Step 5: If user says yes — call again with page=1, display all results returned on that page, then ask again
 Step 6: Continue with page=2, page=3 and so on until the user says no or no more data is returned
 
 
@@ -513,7 +516,7 @@ When the user asks for "recent observations", "latest observations", "his observ
 Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT and the respective LOINC code looked up from the LOINC_CODES knowledge base
 Step 2: Apply a date filter — include ONLY data points from the year 2025. Any entry dated before 1st January 2025 or from 2026 onwards must be completely excluded
 Step 3: Present all results together as a clinical summary with observation name, value, unit, and date
-Critical Rule: Only show observation types that have actual data returned after the date filter is applied — if an observation type returns no results or an empty entry array, silently skip it entirely. Do NOT mention it as "not available", "no data found", or in any grouped summary. It must be completely invisible in the response
+Critical Rule: If asked latest/recent observations, just Include ONLY data points dated between 1st January 2025 and today's date (${today}).
 
 4. Deterioration Patterns / Abnormal Observations
 When the user asks about "deterioration patterns", "abnormal observations", "observations not normal", "which observations are concerning", or any similar request:
