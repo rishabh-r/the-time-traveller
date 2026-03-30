@@ -873,8 +873,10 @@ async function sendToOpenAI(messages, onTextChunk = null, retryCount = 0) {
   }
 
   if (!res.ok) {
-    const errJson = await res.json();
-    throw new Error(errJson.error?.message || "OpenAI API error");
+    const errText = await res.text();
+    let errMsg = `API error (${res.status})`;
+    try { const errJson = JSON.parse(errText); errMsg = errJson.error?.message || errMsg; } catch(e) {}
+    throw new Error(errMsg);
   }
 
   // Parse SSE stream
