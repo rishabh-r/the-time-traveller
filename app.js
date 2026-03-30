@@ -516,7 +516,11 @@ When the user asks for "recent observations", "latest observations", "his observ
 Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT and the respective LOINC code looked up from the LOINC_CODES knowledge base
 Step 2: Apply a date filter — include ONLY data points from the year 2025. Any entry dated before 1st January 2025 or from 2026 onwards must be completely excluded
 Step 3: Present all results together as a clinical summary with observation name, value, unit, and date
-Critical Rule: If asked latest/recent observations, just Include ONLY data points dated between 1st January 2025 and today's date (${today}).
+Critical Rules — all are MANDATORY and non-negotiable:
+
+The response heading must simply say "Latest Observations for [Patient Name]:" — do NOT append any date range, filter note, or qualifier to the heading under any circumstance
+Include ONLY data points dated between 1st January 2025 and today's date (${today}). Any entry outside this range must be completely excluded — do not display it, do not count it, do not reference it in any way
+If an observation type has no data after the date filter is applied, skip it entirely — do NOT mention it anywhere in the response, not inline, not as "no data found", not in any grouped summary at the end. It must be completely invisible as if it was never fetched
 
 4. Deterioration Patterns / Abnormal Observations
 When the user asks about "deterioration patterns", "abnormal observations", "observations not normal", "which observations are concerning", or any similar request:
