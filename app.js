@@ -634,7 +634,8 @@ const TOOLS = [
         properties: {
           SUBJECT:   { type: "string", description: "Patient numeric ID (do NOT include 'Patient/' prefix)" },
           CODE:      { type: "string", description: "ICD-9 diagnosis code" },
-          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+          ENCOUNTER: { type: "string", description: "Encounter numeric ID" },
+          page:      { type: "number", description: "Page number for pagination, starting at 0" }
         }
       }
     }
@@ -649,7 +650,8 @@ const TOOLS = [
         properties: {
           SUBJECT:   { type: "string", description: "Patient numeric ID" },
           CODE:      { type: "string", description: "CPT procedure code" },
-          ENCOUNTER: { type: "string", description: "Encounter numeric ID" }
+          ENCOUNTER: { type: "string", description: "Encounter numeric ID" },
+          page:      { type: "number", description: "Page number for pagination, starting at 0" }
         }
       }
     }
@@ -664,7 +666,8 @@ const TOOLS = [
         properties: {
           SUBJECT:        { type: "string", description: "Patient numeric ID" },
           CODE:           { type: "string", description: "Drug code (e.g. INSULIN, ACET325)" },
-          PRESCRIPTIONID: { type: "string", description: "Prescription ID number" }
+          PRESCRIPTIONID: { type: "string", description: "Prescription ID number" },
+          page:           { type: "number", description: "Page number for pagination, starting at 0" }
         }
       }
     }
@@ -679,7 +682,8 @@ const TOOLS = [
         properties: {
           SUBJECT: { type: "string", description: "Patient numeric ID" },
           DATE:    { type: "string", description: "Start date filter e.g. 'gt2000-01-13' (gt=after, lt=before)" },
-          DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" }
+          DATE2:   { type: "string", description: "End date filter e.g. 'lt2024-09-13'" },
+          page:    { type: "number", description: "Page number for pagination, starting at 0" }
         }
       }
     }
@@ -776,6 +780,7 @@ async function executeTool(name, args) {
         if (args.SUBJECT)   params.subject   = args.SUBJECT;
         if (args.CODE)      params.code      = args.CODE;
         if (args.ENCOUNTER) params.encounter = args.ENCOUNTER;
+        params.page = (args.page !== undefined && args.page !== null && args.page !== "") ? Number(args.page) : 0;
         return await callFhirApi(buildUrl("/baseR4/Condition", params));
       }
       case "search_patient_procedure": {
@@ -783,6 +788,7 @@ async function executeTool(name, args) {
         if (args.SUBJECT)   params.subject   = args.SUBJECT;
         if (args.CODE)      params.code      = args.CODE;
         if (args.ENCOUNTER) params.encounter = args.ENCOUNTER;
+        params.page = (args.page !== undefined && args.page !== null && args.page !== "") ? Number(args.page) : 0;
         return await callFhirApi(buildUrl("/baseR4/Procedure", params));
       }
       case "search_patient_medications": {
@@ -790,6 +796,7 @@ async function executeTool(name, args) {
         if (args.SUBJECT)        params.subject        = args.SUBJECT;
         if (args.CODE)           params.code           = args.CODE;
         if (args.PRESCRIPTIONID) params.prescriptionId = args.PRESCRIPTIONID;
+        params.page = (args.page !== undefined && args.page !== null && args.page !== "") ? Number(args.page) : 0;
         return await callFhirApi(buildUrl("/baseR4/MedicationRequest", params));
       }
       case "search_patient_encounter": {
@@ -799,6 +806,8 @@ async function executeTool(name, args) {
         if (args.SUBJECT) url.searchParams.append("subject", args.SUBJECT);
         if (args.DATE)    url.searchParams.append("date",    args.DATE);
         if (args.DATE2)   url.searchParams.append("date",    args.DATE2);
+        const page = (args.page !== undefined && args.page !== null && args.page !== "") ? Number(args.page) : 0;
+        url.searchParams.append("page", page);
         return await callFhirApi(url.toString());
       }
       case "search_patient_observations": {
