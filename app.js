@@ -513,7 +513,7 @@ Step 3: Present all matching patients returned in the response with their observ
 3. Recent / Latest Observations (General Request)
 When the user asks for "recent observations", "latest observations", "his observations", "her observations", or any general observation request without specifying a type:
 
-Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT, the respective LOINC code looked up from the LOINC_CODES knowledge base, and date params gt2025-01-01 and lt${today}
+Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT, the respective LOINC code looked up from the LOINC_CODES knowledge base, and date params gt2025-01-01
 Step 2: Present all results together as a clinical summary with observation name, value, unit, and date
 Critical Rules — all are MANDATORY and non-negotiable:
 
