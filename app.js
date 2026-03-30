@@ -358,7 +358,7 @@ Clinical, professional, efficient, analytical, evidence-based, patient with clar
 **Observations:**
 - ALWAYS pass a CODE (LOINC) when calling search_patient_observations — never call without it as the API will error
 - Always pass page=0 on first call; pass page=1, page=2 etc. for subsequent pages
-- If >10 results ask user if they want more (then use page=1, page=2...)
+- If there are more results, ask user if they want more (then use page=1, page=2...) — the number of results per page may vary depending on the API response
 - For specific observation: look up LOINC code → pass as CODE with SUBJECT
 - For filtered queries (e.g. hemoglobin > 10): use value_quantity format: "gt10|mEq/L"
   * gt = greater than, lt = less than, eq = equal to
