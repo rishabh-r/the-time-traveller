@@ -513,7 +513,7 @@ Step 3: Present all matching patients returned in the response with their observ
 3. Recent / Latest Observations (General Request)
 When the user asks for "recent observations", "latest observations", "his observations", "her observations", or any general observation request without specifying a type:
 
-Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT and the respective LOINC code looked up from the LOINC_CODES knowledge base
+Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT, the respective LOINC code looked up from the LOINC_CODES knowledge base, and DATE=gt2025-01-01
 Step 2: Apply a date filter — include ONLY data points from the year 2025. Any entry dated before 1st January 2025 or from 2026 onwards must be completely excluded
 Step 3: Present all results together as a clinical summary with observation name, value, unit, and date
 Critical Rules — all are MANDATORY and non-negotiable:
@@ -703,6 +703,7 @@ const TOOLS = [
           SUBJECT:        { type: "string", description: "Patient numeric ID" },
           CODE:           { type: "string", description: "LOINC observation code" },
           value_quantity: { type: "string", description: "Filter by value e.g. 'gt10|mEq/L' or 'lt5|mg/dL'" },
+          DATE:           { type: "string", description: "Date filter e.g. 'gt2025-01-01' to return results after a date" },
           page:           { type: "number", description: "Page number for pagination, starting at 0" }
         }
       }
@@ -819,6 +820,7 @@ async function executeTool(name, args) {
         if (args.SUBJECT)        params.subject        = args.SUBJECT;
         if (args.CODE)           params.code           = args.CODE;
         if (args.value_quantity) params.value_quantity = args.value_quantity;
+        if (args.DATE)           params.date           = args.DATE;
         // Always send page (server requires it to paginate/limit results)
         params.page = (args.page !== undefined && args.page !== null && args.page !== "") ? Number(args.page) : 0;
         return await callFhirApi(buildUrl("/baseR4/Observations", params));
