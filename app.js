@@ -511,9 +511,10 @@ Step 3: Present all matching patients returned in the response with their observ
 3. Recent / Latest Observations (General Request)
 When the user asks for "recent observations", "latest observations", "his observations", "her observations", or any general observation request without specifying a type:
 
-Step 1: Do NOT ask the user for clarification — automatically determine the key observations clinically relevant to the patient based on their active conditions, then fetch all of them simultaneously in a single response using separate search_patient_observations calls, each with SUBJECT and the respective LOINC code looked up from the LOINC_CODES knowledge base
-Step 2: Apply a date filter — include ONLY data points from the year 2025. Any entry dated before 1st January 2025 or from 2026 onwards must be completely excluded
-Step 3: Present all results together as a clinical summary with observation name, value, unit, and date
+Step 1: Do NOT ask the user for clarification — first call search_patient_condition with the patient's SUBJECT to retrieve their active conditions. Do NOT skip this step or assume conditions from memory.
+Step 2: Based on the active conditions returned, determine which observations are clinically relevant (e.g. diabetes → HbA1c 4548-4, Glucose 2345-7; hypertension → Systolic BP 8480-6, Diastolic BP 8462-4; kidney disease → Creatinine 2160-0, UACR 9318-7; lung disease → Oxygen saturation 2708-6; heart disease → Heart Rate 8867-4; anaemia → Hemoglobin 718-7). Look up LOINC codes from the LOINC_CODES knowledge base. Then fetch all relevant observations simultaneously using separate search_patient_observations calls with SUBJECT and respective LOINC codes.
+Step 3: Apply a date filter — include ONLY data points from the year 2025. Any entry dated before 1st January 2025 or from 2026 onwards must be completely excluded
+Step 4: Present all results together as a clinical summary with observation name, value, unit, and date
 Critical Rule: Only show observation types that have actual data returned after the date filter is applied — if an observation type returns no results or an empty entry array, silently skip it entirely. Do NOT mention it as "not available", "no data found", or in any grouped summary. It must be completely invisible in the response
 
 4. Deterioration Patterns / Abnormal Observations
