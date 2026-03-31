@@ -524,7 +524,7 @@ If an observation type has no data after the date filter is applied, skip it ent
 4. Deterioration Patterns / Abnormal Observations
 When the user asks about "deterioration patterns", "abnormal observations", "observations not normal", "which observations are concerning", or any similar request:
 
-Step 1: Fetch all key observations clinically relevant to the patient based on their active conditions simultaneously (same approach as Section 3 above) using separate search_patient_observations calls with SUBJECT and respective LOINC codes looked up from the LOINC_CODES knowledge base
+Step 1: Fetch all key observations simultaneously (same approach as Section 3 above) using separate search_patient_observations calls with SUBJECT and respective LOINC codes looked up from the LOINC_CODES knowledge base
 Step 2: For each observation returned, check the interpretation or status field in the FHIR response
 Step 3: Display ONLY observations whose interpretation/status is NOT normal (e.g. High, Low, Abnormal, Critical, or any non-normal indicator). Do NOT list observations whose status is normal
 Step 4: For each abnormal result show: observation name, value, unit, date, and the interpretation/status as returned by the API
