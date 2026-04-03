@@ -1545,10 +1545,13 @@ function renderChartInBubble(bubble, chartData) {
     const label = item.dataset.label;
     dropdown.classList.add("hidden");
     bulbBtn.classList.remove("active");
-    appendMessage("user", label);
+    const promptOverrides = {
+      "Plot HbA1c Trends": "plot line chart for last 1 year trend for hba1c"
+    };
+    const agentQuery = promptOverrides[label] || label;
+    appendMessage("user", agentQuery);
     const welcomeCard = document.querySelector(".welcome-card");
     if (welcomeCard) welcomeCard.remove();
-    // Store pending action so the next user reply gets the internal query
     const actionMap = {
       "View Active Conditions":          "conditions",
       "View Latest Observations":        "lab",
@@ -1557,10 +1560,6 @@ function renderChartInBubble(bubble, chartData) {
       "View Care Gaps":                  "caregaps"
     };
     if (actionMap[label]) pendingChipAction = actionMap[label];
-    const promptOverrides = {
-      "Plot HbA1c Trends": "plot line chart for last 1 year trend for hba1c"
-    };
-    const agentQuery = promptOverrides[label] || label;
     const input   = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
     isBotResponding = true;
