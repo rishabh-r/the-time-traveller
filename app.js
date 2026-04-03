@@ -1547,11 +1547,15 @@ function renderChartInBubble(bubble, chartData) {
     const label = item.dataset.label;
     dropdown.classList.add("hidden");
     bulbBtn.classList.remove("active");
-    const promptOverrides = {
+    const visibleOverrides = {
       "Plot HbA1c Trends": "plot line chart for last 1 year trend for hba1c"
     };
-    const agentQuery = promptOverrides[label] || label;
-    appendMessage("user", agentQuery);
+    const silentOverrides = {
+      "View Care Gaps": "View Care Gaps in details"
+    };
+    const displayText = visibleOverrides[label] || label;
+    const agentQuery = visibleOverrides[label] || silentOverrides[label] || label;
+    appendMessage("user", displayText);
     const welcomeCard = document.querySelector(".welcome-card");
     if (welcomeCard) welcomeCard.remove();
     const actionMap = {
