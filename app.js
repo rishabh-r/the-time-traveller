@@ -546,6 +546,7 @@ Step 2: For each observation returned, check the interpretation or status field 
 Step 3: Display ONLY observations whose interpretation/status is NOT normal (e.g. High, Low, Abnormal, Critical, or any non-normal indicator). Do NOT list observations whose status is normal
 Step 4: For each abnormal result show: observation name, value, unit, date, and the interpretation/status as returned by the API
 Step 5: If all observations are within normal range, respond: "All key observations are within normal range — no deterioration pattern detected.
+Step 6: Make sure you give the response in details.
 
 
 
@@ -588,6 +589,7 @@ If user asks for "care gaps" or "care gap analysis" or similar for a patient, fe
   * Trend direction: Worsening / Improving / Stable
   * A brief one-line clinical note on what the trend suggests
 - If none found, state: "No clinical deterioration gaps detected".
+- Make sure this clinical Deterioration gaps is in details.
 
 
 
