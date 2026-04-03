@@ -1557,13 +1557,16 @@ function renderChartInBubble(bubble, chartData) {
       "View Care Gaps":                  "caregaps"
     };
     if (actionMap[label]) pendingChipAction = actionMap[label];
-    // Send the chip label directly to the agent — no hardcoded reply
+    const promptOverrides = {
+      "Plot HbA1c Trends": "plot line chart for last 1 year trend for hba1c"
+    };
+    const agentQuery = promptOverrides[label] || label;
     const input   = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
     isBotResponding = true;
     sendBtn.disabled = true;
     input.placeholder = "CareBridge is responding...";
-    await agentLoop(label);
+    await agentLoop(agentQuery);
     isBotResponding = false;
     sendBtn.disabled = false;
     input.placeholder = "Ask about patient records, labs...";
