@@ -1150,7 +1150,42 @@ async function doLogin(email, password) {
 
   localStorage.setItem("cb_token", token);
   localStorage.setItem("cb_user",  name);
+  localStorage.setItem("cb_login_ts", Date.now().toString());
   return name;
+}
+
+// ── Session Expiry (30 minutes) ─────────────────────
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+let _sessionTimer = null;
+
+function isSessionExpired() {
+  const ts = localStorage.getItem("cb_login_ts");
+  if (!ts) return true;
+  return Date.now() - parseInt(ts, 10) > SESSION_TIMEOUT_MS;
+}
+
+function clearSession() {
+  localStorage.removeItem("cb_token");
+  localStorage.removeItem("cb_user");
+  localStorage.removeItem("cb_login_ts");
+}
+
+function startSessionTimer() {
+  if (_sessionTimer) clearTimeout(_sessionTimer);
+  const ts = localStorage.getItem("cb_login_ts");
+  if (!ts) return;
+  const remaining = SESSION_TIMEOUT_MS - (Date.now() - parseInt(ts, 10));
+  if (remaining <= 0) {
+    clearSession();
+    handleLogout();
+    alert("Session expired. Please log in again.");
+    return;
+  }
+  _sessionTimer = setTimeout(() => {
+    clearSession();
+    handleLogout();
+    alert("Session expired. Please log in again.");
+  }, remaining);
 }
 
 // ── DOM Helpers ──────────────────────────────────────
@@ -1283,9 +1318,10 @@ function showChatScreen(name) {
 }
 
 function handleLogout() {
+  if (_sessionTimer) { clearTimeout(_sessionTimer); _sessionTimer = null; }
   localStorage.removeItem("cb_token");
   localStorage.removeItem("cb_user");
-  // Note: we intentionally keep cb_oai_key so user doesn't have to re-enter it
+  localStorage.removeItem("cb_login_ts");
   conversationHistory = [];
 
   // Close chat panel if open
@@ -1356,11 +1392,16 @@ async function handleSend() {
 // ── Event Listeners ──────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Auto-login check
+  // Auto-login check (with session expiry)
   const savedToken = localStorage.getItem("cb_token");
   const savedUser  = localStorage.getItem("cb_user");
   if (savedToken && savedUser) {
-    showChatScreen(savedUser);
+    if (isSessionExpired()) {
+      clearSession();
+    } else {
+      showChatScreen(savedUser);
+      startSessionTimer();
+    }
   }
 
   // Login form
@@ -1385,6 +1426,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const name = await doLogin(email, password);
       overlay.classList.add("hidden");
       showChatScreen(name);
+      startSessionTimer();
     } catch (err) {
       overlay.classList.add("hidden");
       errText.textContent = err.message;
